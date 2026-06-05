@@ -1,54 +1,54 @@
 # CLAUDE.md — Blockavist
 
-## Projektin kuvaus
+## Project Overview
 
-Blockavist on mobiili-puzzle-peli Androidille. Pelaaja ohjaa hahmoa joka liikkuu automaattisesti kentän läpi. Pelaajan tehtävä on napauttaa/tuhota kentän elementtejä sormella, jotta hahmo pääsee maaliin. Peli julkaistaan Google Play Storeen ilmaiseksi mainoksilla rahoitettuna.
+Blockavist is a mobile puzzle game for Android. The player guides a character that moves automatically through levels. The player's task is to tap/destroy elements in the level with their finger so the character can reach the goal. The game will be released on Google Play Store as a free app monetized with ads.
 
-**Engine:** Unity (LTS-versio)  
-**Kohdeplatformi:** Android (Google Play)  
-**Monetisaatio:** Ilmainen + interstitial-mainokset (Google AdMob)  
-**Julkaisutavoite:** 20 kenttää, 2 maailmaa
+**Engine:** Unity 6000.3.11f1 LTS  
+**Target Platform:** Android (Google Play)  
+**Monetization:** Free + interstitial ads (Google AdMob)  
+**Release Target:** 20 levels, 2 worlds
 
 ---
 
 ## Core Loop
 
-1. Pelaaja aloittaa kentän
-2. Hahmo alkaa liikkua automaattisesti eteenpäin
-3. Hahmo kääntyy törmätessään esteeseen
-4. Hahmo tippuu alaspäin jos alla ei ole pintaa, jatkaa liikkumista seuraavalta tasolta
-5. Pelaaja napauttaa elementtejä sormella muuttaakseen kentän rakennetta
-6. Hahmo saavuttaa maalin → kenttä läpäisty → seuraava kenttä avautuu
+1. Player starts a level
+2. Character begins moving automatically forward
+3. Character turns around when it hits a wall
+4. Character falls down when there is no surface below, continues moving from the next platform
+5. Player taps elements with their finger to modify the level structure
+6. Character reaches the goal → level complete → next level unlocks
 
-**Game over:** Hahmo osuu vaaraan tai tippuu kentän ulkopuolelle.
+**Game Over:** Character hits a hazard or falls out of bounds.
 
 ---
 
-## Arkkitehtuuri
+## Architecture
 
-### Kenttäsysteemi
+### Level System
 
-Kentät rakennetaan **ScriptableObject**-pohjaisesti. Jokainen kenttä on oma `.asset`-tiedostonsa joka sisältää:
-- Kenttädata (tiilikartta / elementtien sijainnit)
-- Kentän nimi ja numero
-- Maailma johon kenttä kuuluu
-- Tähtiraja-arvot (optionaalinen myöhemmälle versiolla)
+Levels are built using **ScriptableObjects**. Each level is its own `.asset` file containing:
+- Level data (tilemap / element positions)
+- Level name and number
+- World it belongs to
+- Star threshold values (optional, for future update)
 
-Uuden kentän lisääminen = uusi ScriptableObject-asset. Ei koodimuutoksia.
+Adding a new level = new ScriptableObject asset. No code changes required.
 
 ### LevelManager
 
 ```
 LevelManager
-├── Lataa kentän ScriptableObjectista
-├── Instantioi elementit
-├── Seuraa hahmon tilaa (elossa / kuollut / maalissa)
-└── Triggeröi kentän läpäisyn / game overin
+├── Loads level from ScriptableObject
+├── Instantiates elements
+├── Tracks player state (alive / dead / at goal)
+└── Triggers level complete / game over
 ```
 
-### Elementtisysteemi
+### Element System
 
-Kaikki kenttäelementit perivät yhteisen `TileElement`-baser classin:
+All level elements inherit from a shared `TileElement` abstract base class:
 
 ```
 TileElement (abstract)
@@ -58,144 +58,156 @@ TileElement (abstract)
 └── Render()
 ```
 
-Uuden elementin lisääminen = uusi luokka joka perii `TileElement`:in. Ei muutoksia olemassa olevaan koodiin.
+Adding a new element type = new class extending `TileElement`. Zero changes to existing code.
+
+### Player
+
+- Uses `CapsuleCollider2D` (not BoxCollider2D) — rounded edges prevent spurious wall detection at tile seams. Size 0.85f x 0.85f.
+- `PhysicsMaterial2D` with zero friction applied via `[RequireComponent]`.
+- Wall detection uses contact normal threshold of 0.7f (tunable via `[SerializeField]` in inspector).
+- Movement uses `rb.linearVelocity` (Unity 6 API — legacy `.velocity` is deprecated).
+- Input uses Unity Input System package (new) — `EnhancedTouch` for multi-touch, `Mouse.current` for editor. Zero legacy Input references.
 
 ---
 
-## MVP-elementit
+## MVP Elements
 
-| Elementti | Kuvaus | Interaktio |
+| Element | Description | Interaction |
 |---|---|---|
-| **Tuhottava tiili** | Normaali tiili joka hajoaa | Napauta → häviää |
-| **Tuhoamaton tiili** | Kiinteä este | Ei voi tuhota, hahmo kääntyy |
-| **Piikit** | Staattinen vaara | Hahmo kuolee kosketuksesta |
-| **Maali** | Kentän läpäisypiste | Hahmo saavuttaa → voitto |
+| **Destructible Tile** | Normal tile that breaks | Tap → destroyed |
+| **Indestructible Tile** | Solid obstacle | Cannot be destroyed, player turns |
+| **Spikes** | Static hazard | Player dies on contact |
+| **Goal** | Level completion point | Player reaches → victory |
 
-### Post-MVP elementit (tuleville versioille)
-- Launch pad (ponnauttaa hahmon ylös)
-- Liikkuva vaara
-- Lukittu tiili (vaatii avaimen)
-- Liukas pinta
-- Pomppupinta/trampoliini
+### Post-MVP Elements (future updates)
+- Launch pad (bounces player upward)
+- Moving hazard
+- Locked tile (requires key)
+- Slippery surface
+- Bounce pad / trampoline
 
 ---
 
-## Kenttärakenne
+## Level Structure
 
-**Julkaisu: 20 kenttää, 2 maailmaa**
+**Release target: 20 levels, 2 worlds**
 
-| Maailma | Kentät | Teema | Elementit |
+| World | Levels | Theme | Elements |
 |---|---|---|---|
-| Maailma 1 | 1–10 | Peruskivet | Tuhottava tiili, tuhoamaton tiili, piikit |
-| Maailma 2 | 11–20 | *(suunnitellaan myöhemmin)* | Kaikki MVP-elementit yhdisteltynä |
+| World 1 | 1–10 | Basic Blocks | Destructible tile, indestructible tile, spikes |
+| World 2 | 11–20 | *(TBD)* | All MVP elements combined |
 
-**Vaikeuskäyrä:**
-- Kentät 1–3: tutoriaali, yksi mekaniikka kerrallaan
-- Kentät 4–7: yhdistelmiä, ratkaisut selkeitä
-- Kentät 8–10: vaatii suunnittelua
-- Maailma 2: nouseva vaikeus, "aha-hetket" jokaisessa kentässä
+**Difficulty curve:**
+- Levels 1–3: tutorial, one mechanic at a time
+- Levels 4–7: combinations, solutions are clear
+- Levels 8–10: requires planning
+- World 2: rising difficulty, one "aha moment" per level
 
-**Maailmojen lisääminen päivityksissä:**  
-Uusi maailma = uusi kansio ScriptableObject-asseteille + UI:hin uusi world-node. Ei arkkitehtuurimuutoksia.
+**Adding new worlds in updates:**  
+New world = new folder of ScriptableObject assets + new world node in UI. No architecture changes needed.
 
 ---
 
-## UI & Navigaatio
+## UI & Navigation
 
-### Ruudut
-1. **Main Menu** — logo, Play-nappi, Settings
-2. **World Select** — maailmat ruudukkona, lukittu/auki visuaalisesti
-3. **Level Select** — valitun maailman kentät ruudukkona (Candy Crush -tyylinen layout)
-4. **Game** — pelattava näkymä
-5. **Level Complete** — tulos, Next Level / World Select
+### Screens
+1. **Main Menu** — logo, Play button, Settings
+2. **World Select** — worlds in a grid, locked/unlocked visually
+3. **Level Select** — selected world's levels in a grid (Candy Crush style layout)
+4. **Game** — playable view
+5. **Level Complete** — result, Next Level / World Select
 6. **Game Over** — Retry / World Select
 
-### Mobiili-UX
-- Kaikki interaktio yhden sormen napautuksella
-- Ei näytöllä olevia ohjauspelejä (hahmo liikkuu automaattisesti)
-- Pause-nappi näytön kulmassa
+### Mobile UX
+- All interaction via single finger tap
+- No on-screen controls (character moves automatically)
+- Pause button in screen corner
 
 ---
 
-## Monetisaatio
+## Monetization
 
-**Google AdMob — Interstitial-mainokset**
-- Mainos näytetään kentän läpäisyn jälkeen joka 3. kenttä
-- Ei mainoksia kesken pelin
-- Toteutus: AdMob Unity Plugin
+**Google AdMob — Interstitial Ads**
+- Ad shown after every 3rd level completion
+- No ads during gameplay
+- Implementation: Google Mobile Ads Unity Plugin
 
-**Ei in-app purchaseja MVP:ssä.**
+**No in-app purchases in MVP.**
 
 ---
 
-## Tekninen stack
+## Tech Stack
 
-| Asia | Valinta |
+| Area | Choice |
 |---|---|
 | Engine | Unity 6000.3.11f1 LTS |
-| Kieli | C# |
-| Kenttädata | ScriptableObjects |
-| Kenttäeditori | Unity TileMap + custom inspector |
-| Mainokset | Google AdMob (Google Mobile Ads Unity Plugin) |
-| Versionhallinta | Git + GitHub |
+| Language | C# |
+| Level Data | ScriptableObjects |
+| Level Editor | Unity TileMap + custom inspector |
+| Input | Unity Input System (new) |
+| Ads | Google AdMob (Google Mobile Ads Unity Plugin) |
+| Version Control | Git + GitHub |
 | Build | Unity Android Build + Google Play Console |
 
 ---
 
-## Kehitysvaiheet
+## Development Phases
 
-### Vaihe 1 — Core (prototyyppi)
-- [ ] Hahmon liikkumislogiikka (automaattinen eteneminen, kääntyminen, putoaminen)
-- [ ] TileElement-arkkitehtuuri
-- [ ] Tuhottava tiili + tuhoamaton tiili
-- [ ] Piikit (game over)
-- [ ] Maali (level complete)
-- [ ] Yksi testikentttä
+### Phase 1 — Core (prototype) ✅
+- [x] Player movement logic (automatic walking, turning, falling)
+- [x] TileElement abstract base class architecture
+- [x] Destructible tile + indestructible tile
+- [x] Spikes (game over)
+- [x] Goal (level complete)
+- [x] Prefabs for all tile types and player
+- [x] Clean GameScene with GameManager and InputHandler
+- [x] Unity Input System (new) integration
+- [x] One working test level
 
-### Vaihe 2 — Kenttäsysteemi
-- [ ] ScriptableObject-pohjainen kenttädata
+### Phase 2 — Level System
+- [ ] ScriptableObject-based level data
 - [ ] LevelManager
-- [ ] 5 ensimmäistä kenttää (Maailma 1)
+- [ ] First 5 levels (World 1)
 
-### Vaihe 3 — UI & navigaatio
+### Phase 3 — UI & Navigation
 - [ ] Main Menu
 - [ ] World Select + Level Select
-- [ ] Level Complete + Game Over -ruudut
-- [ ] Kentän lukitus/avaussysteemi
+- [ ] Level Complete + Game Over screens
+- [ ] Level lock/unlock system
 
-### Vaihe 4 — Sisältö
-- [ ] Kaikki 20 kenttää suunniteltu ja toteutettu
-- [ ] Vaikeuskäyrän testaus
+### Phase 4 — Content
+- [ ] All 20 levels designed and implemented
+- [ ] Difficulty curve testing
 
-### Vaihe 5 — Monetisaatio & julkaisu
-- [ ] AdMob integraatio
-- [ ] Android build & optimointi
-- [ ] Google Play Console -tili + Store listing
-- [ ] Ikärajaluokittelu, privacy policy
-- [ ] Julkaisu
-
----
-
-## Devlog & markkinointi
-
-**Alusta:** TikTok (ensisijainen), mahdollisesti YouTube Shorts
-
-**Sisältöideoita:**
-- "Tein mobiilipelin itse" -sarja
-- Level design prosessi (ennen/jälkeen)
-- Claude Code kehityksessä — miltä se näyttää
-- Bugeja ja niiden korjauksia
-- Julkaisuprosessi Google Playhin
-
-**Tavoite:** Consistent upload kehityksen aikana, ei täydellisyyttä vaan aitoa prosessia.
+### Phase 5 — Monetization & Release
+- [ ] AdMob integration
+- [ ] Android build & optimization
+- [ ] Google Play Console account + Store listing
+- [ ] Age rating, privacy policy
+- [ ] Release
 
 ---
 
-## Tunnetut rajoitukset & riskit
+## Devlog & Marketing
 
-| Riski | Mitigaatio |
+**Platform:** TikTok (primary), possibly YouTube Shorts
+
+**Content ideas:**
+- "I built a mobile game myself" series
+- Level design process (before/after)
+- Claude Code in development — what it looks like
+- Bugs and fixes
+- Google Play release process
+
+**Goal:** Consistent uploads during development, authenticity over perfection.
+
+---
+
+## Known Constraints & Risks
+
+| Risk | Mitigation |
 |---|---|
-| Android build -ongelmat | Varaa aikaa vaiheen 5 alussa |
-| AdMob-hyväksyntä kestää | Hae AdMob-tili hyvissä ajoin |
-| Kenttäsuunnittelu vie aikaa | Aloita kenttien suunnittelu paperilla jo vaihe 2:n aikana |
-| Scope creep | Post-MVP-lista olemassa — uudet ideat sinne, ei MVP:hen |
+| Android build issues | Reserve time at the start of Phase 5 |
+| AdMob approval takes time | Apply for AdMob account well in advance |
+| Level design takes time | Start designing levels on paper during Phase 2 |
+| Scope creep | Post-MVP list exists — new ideas go there, not into MVP |

@@ -30,13 +30,16 @@ public class InputHandler : MonoBehaviour
     {
         if (mainCamera == null) return;
 
-        bool gameIsOver = GameManager.Instance != null &&
-                          GameManager.Instance.CurrentState != GameManager.GameState.Playing;
-
-        if (gameIsOver)
+        var gm = GameManager.Instance;
+        if (gm != null && gm.CurrentState != GameManager.GameState.Playing)
         {
             if (AnyTapThisFrame())
-                GameManager.Instance.RestartLevel();
+            {
+                if (gm.CurrentState == GameManager.GameState.GameOver)
+                    gm.RestartLevel();
+                else if (gm.CurrentState == GameManager.GameState.LevelComplete)
+                    gm.LoadNextLevel();   // skip the auto-advance delay
+            }
             return;
         }
 

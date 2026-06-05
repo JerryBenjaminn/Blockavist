@@ -67,6 +67,12 @@ public static class PrefabBuilder
         new GameObject("GameManager").AddComponent<GameManager>();
         new GameObject("InputHandler").AddComponent<InputHandler>();
 
+        // Add LevelManager and wire all prefab references automatically
+        // if the prefabs have already been built via menu item (1).
+        var lmGO = new GameObject("LevelManager");
+        var lm   = lmGO.AddComponent<LevelManager>();
+        WireLevelManagerPrefabs(lm, cam);
+
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddSceneToBuildSettings(ScenePath);
 
@@ -74,6 +80,34 @@ public static class PrefabBuilder
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Assigns tile + player prefab references on LevelManager via SerializedObject
+    /// so the values are saved into the scene asset.  Also assigns the camera.
+    /// Silently skips any prefab that hasn't been built yet.
+    /// </summary>
+    private static void WireLevelManagerPrefabs(LevelManager lm, Camera cam)
+    {
+        var so = new SerializedObject(lm);
+
+        AssignPrefab(so, "indestructiblePrefab", $"{PrefabDir}/IndestructibleTile.prefab");
+        AssignPrefab(so, "destructiblePrefab",   $"{PrefabDir}/DestructibleTile.prefab");
+        AssignPrefab(so, "spikePrefab",          $"{PrefabDir}/SpikeTile.prefab");
+        AssignPrefab(so, "goalPrefab",           $"{PrefabDir}/GoalTile.prefab");
+        AssignPrefab(so, "playerPrefab",         $"{PrefabDir}/Player.prefab");
+
+        if (cam != null)
+            so.FindProperty("gameCamera").objectReferenceValue = cam;
+
+        so.ApplyModifiedProperties();
+    }
+
+    private static void AssignPrefab(SerializedObject so, string propName, string assetPath)
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+        if (prefab == null) return; // prefabs not built yet — user can assign manually
+        so.FindProperty(propName).objectReferenceValue = prefab;
+    }
 
     private static void CreateTilePrefab<T>(
         string name, Color color, Sprite sprite, bool isTrigger) where T : TileElement
