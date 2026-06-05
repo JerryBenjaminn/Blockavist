@@ -1,9 +1,13 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
 
 public class CountdownUI : MonoBehaviour
 {
+    // Fired after "GO!" and player unfreeze — TutorialManager listens to this.
+    public static event Action OnComplete;
+
     [SerializeField] private TMP_Text countdownText;
 
     // Called by UIManager after the level is loaded and the scene has faded in.
@@ -33,6 +37,11 @@ public class CountdownUI : MonoBehaviour
         LevelManager.Instance?.ActivePlayer?.Unfreeze();
 
         if (countdownText != null) countdownText.text = string.Empty;
+
+        // Fire before SetActive(false): disabling the GO stops the coroutine immediately,
+        // so any code after SetActive(false) is never reached.
+        OnComplete?.Invoke();
+
         gameObject.SetActive(false);
     }
 }

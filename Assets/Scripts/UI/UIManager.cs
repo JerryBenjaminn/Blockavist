@@ -31,6 +31,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private LevelCompleteUI levelCompletePanel;
     [SerializeField] private GameOverUI      gameOverPanel;
     [SerializeField] private CountdownUI     countdownPanel;
+    [SerializeField] private TutorialUI      tutorialPanel;
 
     // ── Fade ──────────────────────────────────────────────────────────────────
     [Header("Fade")]
@@ -146,6 +147,7 @@ public class UIManager : MonoBehaviour
         levelCompletePanel ?.gameObject.SetActive(false);
         gameOverPanel      ?.gameObject.SetActive(false);
         countdownPanel     ?.gameObject.SetActive(false);
+        tutorialPanel      ?.gameObject.SetActive(false);
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────

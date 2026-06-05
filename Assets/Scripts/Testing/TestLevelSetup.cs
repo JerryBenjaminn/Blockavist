@@ -93,7 +93,7 @@ public class TestLevelSetup : MonoBehaviour
         // Rigidbody2D and BoxCollider2D are configured inside PlayerController.Awake()
         player.AddComponent<BoxCollider2D>();
         player.AddComponent<Rigidbody2D>();
-        player.AddComponent<PlayerController>();
+        player.AddComponent<PlayerController>().Unfreeze();
     }
 
     private void PositionCamera()

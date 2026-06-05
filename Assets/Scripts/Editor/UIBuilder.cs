@@ -80,6 +80,7 @@ public static class UIBuilder
         var countdownGO    = BuildCountdownPanel   (rootT);
         var lvlCompleteGO  = BuildLevelCompletePanel(rootT);
         var gameOverGO     = BuildGameOverPanel    (rootT);
+        var tutorialGO     = BuildTutorialPanel    (rootT);
 
         // Hide everything except loading
         mainMenuGO.SetActive(false);
@@ -91,6 +92,7 @@ public static class UIBuilder
         countdownGO  .SetActive(false);
         lvlCompleteGO.SetActive(false);
         gameOverGO   .SetActive(false);
+        tutorialGO   .SetActive(false);
 
         // ── UIManager wiring ──────────────────────────────────────────────────
         var so = new SerializedObject(uiManagerComp);
@@ -105,10 +107,21 @@ public static class UIBuilder
         SetObjRef(so, "levelCompletePanel",   lvlCompleteGO .GetComponent<LevelCompleteUI>());
         SetObjRef(so, "gameOverPanel",        gameOverGO    .GetComponent<GameOverUI>());
         SetObjRef(so, "countdownPanel",       countdownGO   .GetComponent<CountdownUI>());
+        SetObjRef(so, "tutorialPanel",        tutorialGO    .GetComponent<TutorialUI>());
         SetObjRef(so, "fadeOverlay",          fadeCG);
         so.ApplyModifiedProperties();
 
         EditorUtility.SetDirty(uiManagerGO);
+
+        // ── TutorialManager — attach to GameManager GO and wire panel ─────────
+        var gmGO        = EnsureComponent<GameManager>("GameManager");
+        var tutorialMgr = gmGO.GetComponent<TutorialManager>();
+        if (tutorialMgr == null) tutorialMgr = gmGO.AddComponent<TutorialManager>();
+        var soTM = new SerializedObject(tutorialMgr);
+        SetObjRef(soTM, "tutorialPanel", tutorialGO.GetComponent<TutorialUI>());
+        soTM.ApplyModifiedProperties();
+        EditorUtility.SetDirty(gmGO);
+
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
 
@@ -459,6 +472,34 @@ public static class UIBuilder
         var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.20f),
                         new Vector2(440, 80), CardBg, White, 40);
         UnityEventTools.AddPersistentListener(wsBtn.onClick, ui.OnWorldSelectClicked);
+
+        return root;
+    }
+
+    // ── Tutorial Panel (overlay) ──────────────────────────────────────────────
+    static GameObject BuildTutorialPanel(Transform parent)
+    {
+        var root = PanelFull(parent, "TutorialPanel", DimOverlay).gameObject;
+        var ui   = root.AddComponent<TutorialUI>();
+
+        var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
+                                 new Vector2(680, 380), CardBg);
+
+        var msgTmp = TMP(card, "Tap yellow blocks to destroy them", 52, White);
+        Anchored(msgTmp.rectTransform, new Vector2(0.5f, 0.64f), new Vector2(580, 160));
+        msgTmp.enableWordWrapping = true;
+
+        var confirmBtn = Btn(card, "Got it!", new Vector2(0.5f, 0.22f),
+                             new Vector2(380, 96), AccentGreen, White, 48);
+        UnityEventTools.AddPersistentListener(confirmBtn.onClick, ui.OnConfirmClicked);
+
+        var btnLabelTmp = confirmBtn.GetComponentInChildren<TextMeshProUGUI>();
+
+        var soUI = new SerializedObject(ui);
+        SetObjRef(soUI, "messageText",   msgTmp);
+        SetObjRef(soUI, "buttonLabel",   btnLabelTmp);
+        SetObjRef(soUI, "confirmButton", confirmBtn);
+        soUI.ApplyModifiedProperties();
 
         return root;
     }

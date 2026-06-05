@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     private int direction = 1; // 1 = right, -1 = left
 
     public bool IsAlive  { get; private set; } = true;
-    public bool IsFrozen { get; private set; }
+    public bool IsFrozen { get; private set; } = true;
 
     /// <summary>Freeze horizontal movement while keeping gravity active (used during countdown).</summary>
     public void Freeze()   => IsFrozen = true;
