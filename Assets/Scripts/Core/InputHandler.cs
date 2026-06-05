@@ -30,18 +30,12 @@ public class InputHandler : MonoBehaviour
     {
         if (mainCamera == null) return;
 
+        // Only handle tile-tap input while a level is actively playing.
+        // Game-over / level-complete navigation is handled exclusively by UIManager's
+        // on-screen buttons; the old tap-anywhere fallback was removed to prevent
+        // double-invocation of RestartLevel()/LoadNextLevel().
         var gm = GameManager.Instance;
-        if (gm != null && gm.CurrentState != GameManager.GameState.Playing)
-        {
-            if (AnyTapThisFrame())
-            {
-                if (gm.CurrentState == GameManager.GameState.GameOver)
-                    gm.RestartLevel();
-                else if (gm.CurrentState == GameManager.GameState.LevelComplete)
-                    gm.LoadNextLevel();   // skip the auto-advance delay
-            }
-            return;
-        }
+        if (gm == null || gm.CurrentState != GameManager.GameState.Playing) return;
 
         // Multi-touch (mobile)
         foreach (var touch in Touch.activeTouches)

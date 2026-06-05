@@ -16,7 +16,12 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private int direction = 1; // 1 = right, -1 = left
 
-    public bool IsAlive { get; private set; } = true;
+    public bool IsAlive  { get; private set; } = true;
+    public bool IsFrozen { get; private set; }
+
+    /// <summary>Freeze horizontal movement while keeping gravity active (used during countdown).</summary>
+    public void Freeze()   => IsFrozen = true;
+    public void Unfreeze() => IsFrozen = false;
 
     private void Awake()
     {
@@ -47,8 +52,9 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         if (!IsAlive) return;
+        float hSpeed = IsFrozen ? 0f : direction * moveSpeed;
         // Preserve vertical velocity (gravity/falling) while controlling horizontal
-        rb.linearVelocity = new Vector2(direction * moveSpeed, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(hSpeed, rb.linearVelocity.y);
     }
 
     private void Update()

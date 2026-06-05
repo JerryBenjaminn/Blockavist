@@ -12,12 +12,8 @@ public class GameManager : MonoBehaviour
 
     // ── Level catalogue ───────────────────────────────────────────────────────
 
-    [Header("Levels — drag assets in order")]
+    [Header("Levels — drag assets in order (all worlds)")]
     [SerializeField] private LevelData[] levels;
-
-    // How long to wait after level complete before loading the next level.
-    // Set to 0 for instant advance.  Phase 3 UI will replace this with a button.
-    [SerializeField] private float autoAdvanceDelay = 1.5f;
 
     private int currentLevelIndex = 0;
 
@@ -39,9 +35,9 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Auto-load first level when LevelManager is present.
-        // TestLevelSetup scenes work because LevelManager won't be in those scenes.
-        if (LevelManager.Instance != null && CurrentLevel != null)
+        // Auto-load first level only in TestLevelSetup scenes (no UIManager present).
+        // In GameScene, UIManager drives level loading via GoToGame().
+        if (UIManager.Instance == null && LevelManager.Instance != null && CurrentLevel != null)
             LevelManager.Instance.LoadLevel(CurrentLevel);
     }
 
@@ -51,8 +47,8 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentState != GameState.Playing) return;
         CurrentState = GameState.GameOver;
-        Debug.Log($"[Blockavist] Game Over — level {CurrentLevelNumber}. Tap to retry.");
-        // TODO Phase 3: show Game Over UI
+        Debug.Log($"[Blockavist] Game Over — level {CurrentLevelNumber}.");
+        UIManager.Instance?.ShowGameOver();
     }
 
     public void OnLevelComplete()
@@ -60,37 +56,45 @@ public class GameManager : MonoBehaviour
         if (CurrentState != GameState.Playing) return;
         CurrentState = GameState.LevelComplete;
         Debug.Log($"[Blockavist] Level {CurrentLevelNumber} complete!");
-        // TODO Phase 3: show Level Complete UI before advancing (remove the Invoke then)
-        // TODO Phase 5: trigger AdMob interstitial every 3 completions
-        Invoke(nameof(LoadNextLevel), autoAdvanceDelay);
+
+        ProgressManager.Instance?.UnlockNextLevel(CurrentLevelNumber);
+        UIManager.Instance?.ShowLevelComplete();
+        // No Invoke / auto-advance: LevelCompleteUI drives progression via LoadNextLevel()
     }
 
     // ── Navigation ────────────────────────────────────────────────────────────
 
-    /// <summary>Restart the current level (called on tap-after-game-over).</summary>
+    /// <summary>
+    /// Restart current level.  In GameScene, UIManager.StartLevelSequence() shows
+    /// the countdown.  In TestLevelSetup scenes, falls back to scene reload.
+    /// </summary>
     public void RestartLevel()
     {
         CurrentState = GameState.Playing;
 
         if (LevelManager.Instance != null)
-            LevelManager.Instance.LoadLevel(CurrentLevel);   // null → scene reload inside LevelManager
+        {
+            if (CurrentLevel == null)
+            {
+                Debug.LogWarning("[GameManager] RestartLevel called but CurrentLevel is null — returning to World Select.");
+                UIManager.Instance?.GoToWorldSelect();
+                return;
+            }
+            LevelManager.Instance.LoadLevel(CurrentLevel);
+            UIManager.Instance?.StartLevelSequence();
+        }
         else
+        {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     /// <summary>
-    /// Advance to the next level.
-    /// Called automatically after autoAdvanceDelay, or immediately when the
-    /// player taps during the LevelComplete state (InputHandler skips the wait).
-    /// Phase 3 UI will call this from a "Next Level" button instead.
+    /// Advance to the next level.  Called by LevelCompleteUI "Next Level" button.
+    /// UIManager.StartLevelSequence() handles hiding overlays and countdown.
     /// </summary>
     public void LoadNextLevel()
     {
-        // Cancel the Invoke in case this was called early (tap-to-skip),
-        // preventing a second call from the original timer.
-        CancelInvoke(nameof(LoadNextLevel));
-
-        // Guard: only advance from LevelComplete state.
         if (CurrentState != GameState.LevelComplete) return;
 
         currentLevelIndex++;
@@ -98,21 +102,40 @@ public class GameManager : MonoBehaviour
         if (currentLevelIndex >= TotalLevels)
         {
             Debug.Log("[Blockavist] All levels complete — world finished!");
-            // TODO Phase 3: return to World Select
+            UIManager.Instance?.GoToWorldSelect();
             return;
         }
 
         CurrentState = GameState.Playing;
+        if (CurrentLevel == null)
+        {
+            Debug.LogWarning("[GameManager] LoadNextLevel: CurrentLevel is null — returning to World Select.");
+            UIManager.Instance?.GoToWorldSelect();
+            return;
+        }
         LevelManager.Instance?.LoadLevel(CurrentLevel);
+        UIManager.Instance?.StartLevelSequence();
         Debug.Log($"[Blockavist] Loading level {CurrentLevelNumber}…");
     }
 
-    /// <summary>Jump to a specific level by 0-based index (used by Level Select in Phase 3).</summary>
+    /// <summary>Jump to a specific level by 0-based index (called from UIManager.GoToGame).</summary>
     public void LoadLevelAt(int index)
     {
         if (index < 0 || index >= TotalLevels) return;
         currentLevelIndex = index;
         CurrentState      = GameState.Playing;
         LevelManager.Instance?.LoadLevel(CurrentLevel);
+    }
+
+    /// <summary>Find the 0-based index in the levels array for a given levelNumber + world.</summary>
+    public int FindLevelIndex(int levelNumber, int worldNumber)
+    {
+        if (levels == null) return -1;
+        for (int i = 0; i < levels.Length; i++)
+            if (levels[i] != null &&
+                levels[i].levelNumber == levelNumber &&
+                levels[i].worldNumber == worldNumber)
+                return i;
+        return -1;
     }
 }
