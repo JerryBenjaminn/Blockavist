@@ -49,6 +49,7 @@ public static class UIBuilder
     private static Sprite _sprCheckRed;
     private static Sprite _sprStarFull;
     private static Sprite _sprStarEmpty;
+    private static Sprite _sprBackground; // Cubby_0 sub-sprite from Cubby.png (Multiple mode)
 
     // Font assets — loaded once per Build UI run
     private static TMP_FontAsset _fontBlocks; // game title / logo
@@ -69,6 +70,13 @@ public static class UIBuilder
 
         if (_fontBlocks == null) Debug.LogWarning("[Cubby's Blocks] Kenney Blocks SDF not found in Assets/Fonts/");
         if (_fontBold   == null) Debug.LogWarning("[Cubby's Blocks] Kenney Bold SDF not found in Assets/Fonts/");
+
+        // Cubby.png uses Multiple sprite mode — the sub-sprite is named Cubby_0
+        _sprBackground = null;
+        foreach (var a in AssetDatabase.LoadAllAssetsAtPath("Assets/Art/Background/Cubby.png"))
+            if (a is Sprite s && s.name == "Cubby_0") { _sprBackground = s; break; }
+        if (_sprBackground == null)
+            Debug.LogWarning("[Cubby's Blocks] Background sprite Cubby_0 not found in Assets/Art/Background/Cubby.png");
     }
 
     // ── Entry point ───────────────────────────────────────────────────────────
@@ -202,37 +210,62 @@ public static class UIBuilder
     // ── Loading Screen ────────────────────────────────────────────────────────
     static GameObject BuildLoadingScreen(Transform parent)
     {
-        var root = PanelFull(parent, "LoadingScreen", BgDark).gameObject;
+        // Transparent panel — background image sits in front of camera, all UI sits on top.
+        var root = PanelFull(parent, "LoadingScreen", Color.clear).gameObject;
         var ui   = root.AddComponent<LoadingScreenUI>();
 
-        // Title — Kenney Blocks SDF for the logo
-        var title = TMP(root.transform, "Cubby's Blocks", 110, AccentBlue,
+        AddScreenBackground(root.transform);
+
+        // ── Title ─────────────────────────────────────────────────────────────
+        // Upper-centre, clear of the background characters in the centre-bottom area.
+        // #FFE000 bright yellow reads well against the pastel blue sky with black outline.
+        var title = TMP(root.transform, "Cubby's Blocks", 76,
+                        new Color(1f, 0.878f, 0f),          // #FFE000
                         TextAlignmentOptions.Center, _fontBlocks);
-        Anchored(title.rectTransform, new Vector2(0.5f, 0.62f), new Vector2(900, 130));
+        Anchored(title.rectTransform, new Vector2(0.5f, 0.82f), new Vector2(960, 110));
 
-        // Progress bar background
-        var barBG = PanelAnchored(root.transform, "BarBG", new Vector2(0.5f, 0.32f),
-                                  new Vector2(700, 22), new Color(0.25f, 0.25f, 0.35f));
-        // Progress fill
-        var fillRT  = PanelAnchored(barBG, "BarFill", new Vector2(0f, 0.5f),
-                                    new Vector2(700, 22), AccentBlue);
-        fillRT.anchorMin = new Vector2(0f, 0f);
-        fillRT.anchorMax = new Vector2(0f, 1f);
-        fillRT.pivot     = new Vector2(0f, 0.5f);
-        fillRT.sizeDelta = new Vector2(0f, 0f);
-        var fillImg  = fillRT.gameObject.GetComponent<Image>();
-        fillImg.type = Image.Type.Filled;
-        fillImg.fillMethod = Image.FillMethod.Horizontal;
-        fillImg.fillAmount = 0f;
+        // TMP outline
+        title.outlineColor = Color.black;
+        title.outlineWidth = 0.2f;
 
-        // Status text
-        var status = TMP(root.transform, "Loading...  0%", 38, new Color(0.7f, 0.7f, 0.8f));
-        Anchored(status.rectTransform, new Vector2(0.5f, 0.25f), new Vector2(700, 50));
+        // TMP underlay (drop shadow) — modifies an instanced copy of the font material
+        var titleMat = title.fontMaterial;
+        if (titleMat != null)
+        {
+            titleMat.EnableKeyword("UNDERLAY_ON");
+            titleMat.SetColor("_UnderlayColor",   new Color(0f, 0f, 0f, 0.60f));
+            titleMat.SetFloat("_UnderlayOffsetX",  1.0f);
+            titleMat.SetFloat("_UnderlayOffsetY", -1.0f);
+            titleMat.SetFloat("_UnderlaySoftness", 0.10f);
+        }
 
-        // Wire
+        // ── Loading bar — bottom-centre, clear of background art ─────────────
+        // Dark semi-transparent tray behind the bar gives contrast over any background.
+        var barTray = PanelAnchored(root.transform, "BarTray", new Vector2(0.5f, 0.09f),
+                                    new Vector2(720, 64), new Color(0f, 0f, 0f, 0.40f));
+
+        // Inset bar background inside the tray
+        var barBG = PanelAnchored(barTray, "BarBG", Vector2.one * 0.5f,
+                                  new Vector2(680, 44), new Color(0f, 0f, 0f, 0.55f));
+
+        // Fill — anchor-based: anchorMax.x grows 0→1 as progress advances.
+        // Image.Type.Simple fills whatever rect it occupies; LoadingScreenUI drives
+        // the width by setting rectTransform.anchorMax = new Vector2(t, 1f).
+        var fillGO  = new GameObject("BarFill");
+        fillGO.transform.SetParent(barBG, false);
+        var fillImg             = fillGO.AddComponent<Image>();
+        fillImg.color           = new Color(1f, 0.878f, 0f); // #FFE000 matches title
+        fillImg.type            = Image.Type.Simple;
+        var fillRT              = fillGO.GetComponent<RectTransform>();
+        fillRT.anchorMin        = Vector2.zero;            // left edge anchored at 0
+        fillRT.anchorMax        = new Vector2(0f, 1f);    // starts with zero width
+        fillRT.pivot            = new Vector2(0f, 0.5f);
+        fillRT.sizeDelta        = Vector2.zero;
+        fillRT.anchoredPosition = Vector2.zero;
+
+        // Wire — statusText left unwired; null-checks in LoadingScreenUI keep it safe
         var soUI = new SerializedObject(ui);
         SetObjRef(soUI, "progressFill", fillImg);
-        SetObjRef(soUI, "statusText",   status);
         soUI.ApplyModifiedProperties();
 
         return root;
@@ -241,13 +274,18 @@ public static class UIBuilder
     // ── Main Menu ─────────────────────────────────────────────────────────────
     static GameObject BuildMainMenu(Transform parent)
     {
-        var root = PanelFull(parent, "MainMenuScreen", BgDark).gameObject;
+        var root = PanelFull(parent, "MainMenuScreen", Color.clear).gameObject;
         var ui   = root.AddComponent<MainMenuUI>();
 
-        // Title — Kenney Blocks SDF for the logo
-        TMP(root.transform, "Cubby's Blocks", 120, AccentBlue,
-            TextAlignmentOptions.Center, _fontBlocks)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.70f), new Vector2(1000, 140)));
+        AddScreenBackground(root.transform);
+
+        // Title — #FFE000 yellow + black outline matches the LoadingScreen style
+        var mainTitle = TMP(root.transform, "Cubby's Blocks", 120,
+                            new Color(1f, 0.878f, 0f), // #FFE000
+                            TextAlignmentOptions.Center, _fontBlocks);
+        Anchored(mainTitle.rectTransform, new Vector2(0.5f, 0.70f), new Vector2(1000, 140));
+        mainTitle.outlineColor = Color.black;
+        mainTitle.outlineWidth = 0.2f;
 
         // Play — primary action
         var playBtn = Btn(root.transform, "PLAY", new Vector2(0.5f, 0.44f),
@@ -306,8 +344,10 @@ public static class UIBuilder
     // ── World Select ──────────────────────────────────────────────────────────
     static GameObject BuildWorldSelect(Transform parent)
     {
-        var root = PanelFull(parent, "WorldSelectScreen", BgDark).gameObject;
+        var root = PanelFull(parent, "WorldSelectScreen", Color.clear).gameObject;
         var ui   = root.AddComponent<WorldSelectUI>();
+
+        AddScreenBackground(root.transform);
 
         TMP(root.transform, "Select World", 34, White)
             .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.88f), new Vector2(800, 52)));
@@ -360,8 +400,10 @@ public static class UIBuilder
     // ── Level Select ──────────────────────────────────────────────────────────
     static GameObject BuildLevelSelect(Transform parent)
     {
-        var root = PanelFull(parent, "LevelSelectScreen", BgDark).gameObject;
+        var root = PanelFull(parent, "LevelSelectScreen", Color.clear).gameObject;
         var ui   = root.AddComponent<LevelSelectUI>();
+
+        AddScreenBackground(root.transform);
 
         var titleTmp = TMP(root.transform, "World 1", 34, White);
         Anchored(titleTmp.rectTransform, new Vector2(0.5f, 0.90f), new Vector2(800, 52));
@@ -629,6 +671,38 @@ public static class UIBuilder
     // ═════════════════════════════════════════════════════════════════════════
     // LOW-LEVEL HELPERS
     // ═════════════════════════════════════════════════════════════════════════
+
+    // Full-screen background image placed as the first child of a screen root so
+    // it renders behind every sibling.  A nested Canvas with sortingOrder -1 keeps
+    // it in front of the camera but behind the main UIRoot canvas (sortingOrder 10).
+    // raycastTarget = false ensures it never intercepts button clicks.
+    static void AddScreenBackground(Transform screenRoot)
+    {
+        if (_sprBackground == null) return;
+
+        var go = new GameObject("ScreenBackground");
+        go.transform.SetParent(screenRoot, false);
+        go.transform.SetSiblingIndex(0); // first child = behind all siblings
+
+        var img            = go.AddComponent<Image>();
+        img.sprite         = _sprBackground;
+        img.color          = Color.white;
+        img.raycastTarget  = false;
+        img.preserveAspect = false; // stretch to fill
+
+        var rt       = img.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+
+        // Nested canvas gives an explicit sort order independent of hierarchy depth.
+        // sortingOrder -1 < UIRoot sortingOrder 10, so this is always behind all UI.
+        var canvas = go.AddComponent<Canvas>();
+        canvas.overrideSorting = true;
+        canvas.sortingOrder    = -1;
+        // No GraphicRaycaster — background never needs to receive input events.
+    }
 
     // Creates a root Canvas with CanvasScaler
     static GameObject CreateCanvas(string name, int sortOrder)
