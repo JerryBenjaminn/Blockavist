@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!129 &1
 PlayerSettings:
@@ -778,7 +778,7 @@ PlayerSettings:
   cloudProjectId: f1dcb2c9-8308-4a45-938d-9d68a40d4bad
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Cubby's Blocks
+  projectName: Blockavist
   organizationId: jerrynor
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

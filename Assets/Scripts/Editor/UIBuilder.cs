@@ -84,10 +84,11 @@ public static class UIBuilder
         // ── Service singletons ────────────────────────────────────────────────
         // UIManager is resolved before screen builders so BuildGameHUD can
         // reference the real component for a persistent listener.
-        EnsureComponent<ProgressManager>("ProgressManager");
-        EnsureComponent<AudioManager>   ("AudioManager");
-        EnsureComponent<AdsManager>     ("AdsManager");
-        EnsureComponent<VFXManager>     ("VFXManager");
+        EnsureComponent<ProgressManager>  ("ProgressManager");
+        EnsureComponent<AudioManager>    ("AudioManager");
+        EnsureComponent<AdsManager>      ("AdsManager");
+        EnsureComponent<VFXManager>      ("VFXManager");
+        EnsureComponent<BackgroundManager>("Background");
         var uiManagerGO   = EnsureComponent<UIManager>("UIManager");
         var uiManagerComp = uiManagerGO.GetComponent<UIManager>();
 

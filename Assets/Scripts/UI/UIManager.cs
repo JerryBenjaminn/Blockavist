@@ -74,6 +74,7 @@ public class UIManager : MonoBehaviour
     public void GoToMainMenu()
     {
         HideAllOverlays();
+        BackgroundManager.Instance?.SetVisible(false);
         LevelManager.Instance?.UnloadCurrentLevel();
         Transition(mainMenu?.gameObject);
     }
@@ -81,12 +82,14 @@ public class UIManager : MonoBehaviour
     public void GoToWorldSelect()
     {
         HideAllOverlays();
+        BackgroundManager.Instance?.SetVisible(false);
         LevelManager.Instance?.UnloadCurrentLevel();
         Transition(worldSelect?.gameObject, () => worldSelect?.Refresh());
     }
 
     public void GoToLevelSelect(int world)
     {
+        BackgroundManager.Instance?.SetVisible(false);
         Transition(levelSelect?.gameObject, () => levelSelect?.Setup(world));
     }
 
@@ -108,6 +111,8 @@ public class UIManager : MonoBehaviour
     {
         HideAllOverlays();
         ShowOnlyScreen(gameHUD);
+        BackgroundManager.Instance?.ResetClouds();
+        BackgroundManager.Instance?.SetVisible(true);
         countdownPanel?.Begin();
     }
 
@@ -120,6 +125,7 @@ public class UIManager : MonoBehaviour
     {
         if (pausePanel == null) return;
         pausePanel.gameObject.SetActive(true);
+        BackgroundManager.Instance?.SetVisible(false);
         LevelManager.Instance?.ActivePlayer?.Freeze();
     }
 
@@ -128,16 +134,21 @@ public class UIManager : MonoBehaviour
         if (pausePanel == null) return;
         pausePanel.gameObject.SetActive(false);
         LevelManager.Instance?.ActivePlayer?.Unfreeze();
+        // Only restore clouds if the player is still mid-game (not headed to a menu)
+        if (GameManager.Instance?.CurrentState == GameManager.GameState.Playing)
+            BackgroundManager.Instance?.SetVisible(true);
     }
 
     public void ShowLevelComplete()
     {
         levelCompletePanel?.gameObject.SetActive(true);
+        BackgroundManager.Instance?.SetVisible(false);
     }
 
     public void ShowGameOver()
     {
         gameOverPanel?.gameObject.SetActive(true);
+        BackgroundManager.Instance?.SetVisible(false);
     }
 
     public void HideAllOverlays()
@@ -158,6 +169,8 @@ public class UIManager : MonoBehaviour
 
         GameManager.Instance?.LoadLevelAt(levelIndex);
         ShowOnlyScreen(gameHUD);
+        BackgroundManager.Instance?.ResetClouds();
+        BackgroundManager.Instance?.SetVisible(true);
 
         yield return Fade(1f, 0f);
 

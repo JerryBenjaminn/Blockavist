@@ -68,7 +68,7 @@ public static class PrefabBuilder
             cam.orthographic       = true;
             cam.orthographicSize   = 5f;
             cam.transform.position = new Vector3(0f, 0f, -10f);
-            cam.backgroundColor    = new Color(0.08f, 0.08f, 0.12f);
+            cam.backgroundColor    = new Color(0.659f, 0.847f, 0.918f); // #A8D8EA pastel blue
             cam.clearFlags         = CameraClearFlags.SolidColor;
         }
 
