@@ -98,6 +98,10 @@ public static class UIBuilder
         var gameOverGO    = FindOrCreate(rootT, "GameOverPanel",      () => BuildGameOverPanel(rootT));
         var tutorialGO    = FindOrCreate(rootT, "TutorialPanel",      () => BuildTutorialPanel(rootT));
 
+        // ── Audio — ButtonSFX on every standard button ────────────────────────
+        // Skips LevelButtonUI buttons; those play level_select SFX in OnClicked().
+        EnsureButtonSFX(root);
+
         // ── Initial active states ─────────────────────────────────────────────
         loadingGO    .SetActive(true);
         mainMenuGO   .SetActive(false);
@@ -676,6 +680,18 @@ public static class UIBuilder
     {
         var p = so.FindProperty(prop);
         if (p != null) p.objectReferenceValue = value;
+    }
+
+    // Adds ButtonSFX to every Button in the UIRoot that doesn't already have one,
+    // except LevelButtonUI buttons — those call AudioManager.PlayLevelSelect() directly.
+    static void EnsureButtonSFX(GameObject uiRoot)
+    {
+        foreach (var btn in uiRoot.GetComponentsInChildren<Button>(true))
+        {
+            if (btn.GetComponent<LevelButtonUI>() != null) continue;
+            if (btn.GetComponent<ButtonSFX>()    == null)
+                btn.gameObject.AddComponent<ButtonSFX>();
+        }
     }
 
     // Re-wires the levelButtons array and OnClicked listeners for every Level_XX

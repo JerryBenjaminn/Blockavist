@@ -10,6 +10,7 @@ public class DestructibleTile : TileElement
 
     public override void OnPlayerTouch()
     {
+        AudioManager.Instance?.PlayPopTile();
         Destroy(gameObject);
     }
 

@@ -165,6 +165,7 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale   = 0f;
         if (faceRenderer != null && faceShocked != null) faceRenderer.sprite = faceShocked;
         if (bobScript    != null) bobScript.enabled = false;
+        AudioManager.Instance?.PlayCubbyDie();
         GameManager.Instance?.OnPlayerDied();
     }
 
@@ -175,6 +176,7 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale   = 0f;
         if (faceRenderer != null && faceSmileBig != null) faceRenderer.sprite = faceSmileBig;
         if (bobScript    != null) bobScript.enabled = false;
+        AudioManager.Instance?.PlayCubbyGoal();
         GameManager.Instance?.OnLevelComplete();
     }
 }

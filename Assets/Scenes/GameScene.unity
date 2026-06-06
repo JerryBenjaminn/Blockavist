@@ -8874,6 +8874,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   musicSource: {fileID: 0}
+  sfxSource: {fileID: 0}
+  musicClip: {fileID: 8300000, guid: a69113d1bd1b33441b105dea0263ae43, type: 3}
+  buttonClickClip: {fileID: 8300000, guid: f926b20831d3dcd44bf15b91777105fe, type: 3}
+  levelSelectClip: {fileID: 8300000, guid: ff8cd4218297a6a43ad7238afdbe830d, type: 3}
+  cubbyDieClip: {fileID: 8300000, guid: 0d5b5d36f1b24154f9f39e5e09a3a3d9, type: 3}
+  cubbyGoalClip: {fileID: 8300000, guid: 85c804c6b5d07144d9174fc291bd2d27, type: 3}
+  popTileClip: {fileID: 8300000, guid: f4d4e77a4c92f3e4e818cebfac57145b, type: 3}
 --- !u!4 &1341722442
 Transform:
   m_ObjectHideFlags: 0

@@ -23,6 +23,7 @@ public class LevelButtonUI : MonoBehaviour
     public void OnClicked()
     {
         if (levelIndex < 0) return;
+        AudioManager.Instance?.PlayLevelSelect();
         UIManager.Instance?.GoToGame(levelIndex);
     }
 }
