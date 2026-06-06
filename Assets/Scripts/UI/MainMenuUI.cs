@@ -6,7 +6,12 @@ public class MainMenuUI : MonoBehaviour
     // Button callbacks — wired in UIBuilder via Button.onClick
     public void OnPlayClicked()
     {
-        UIManager.Instance?.GoToWorldSelect();
+        if (UIManager.Instance == null)
+        {
+            Debug.LogError("[MainMenuUI] UIManager.Instance is null — is UIManager in the scene?");
+            return;
+        }
+        UIManager.Instance.GoToWorldSelect();
     }
 
     public void OnSettingsClicked()

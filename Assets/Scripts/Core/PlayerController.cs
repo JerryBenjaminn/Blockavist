@@ -4,8 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(CapsuleCollider2D))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 3f;
-    [SerializeField] private float deathYThreshold = -10f;
+    [SerializeField] private float moveSpeed          = 3f;
+    [SerializeField] private float deathYThreshold    = -10f;
 
     // A contact is treated as a "wall" only when its normal points at least this
     // far sideways (|nx| > threshold).  0.5 ≈ 30° from vertical — too loose;
@@ -13,8 +13,19 @@ public class PlayerController : MonoBehaviour
     // 0.7 ≈ 44° requires a genuinely near-horizontal surface to trigger a flip.
     [SerializeField] private float wallNormalThreshold = 0.7f;
 
+    [Header("Face Sprites")]
+    [SerializeField] private Sprite faceHappy;
+    [SerializeField] private Sprite faceShocked;
+    [SerializeField] private Sprite faceSmileBig;
+
     private Rigidbody2D rb;
     private int direction = 1; // 1 = right, -1 = left
+
+    // Visual component refs — auto-discovered in Awake from the Visual child hierarchy
+    private SpriteRenderer bodyRenderer;
+    private SpriteRenderer faceRenderer;
+    private SpriteRenderer peaceSignRenderer;
+    private CubbyBob       bobScript;
 
     public bool IsAlive  { get; private set; } = true;
     public bool IsFrozen { get; private set; } = true;
@@ -22,6 +33,16 @@ public class PlayerController : MonoBehaviour
     /// <summary>Freeze horizontal movement while keeping gravity active (used during countdown).</summary>
     public void Freeze()   => IsFrozen = true;
     public void Unfreeze() => IsFrozen = false;
+
+    public void ShowPeaceSign()
+    {
+        if (peaceSignRenderer != null) peaceSignRenderer.gameObject.SetActive(true);
+    }
+
+    public void HidePeaceSign()
+    {
+        if (peaceSignRenderer != null) peaceSignRenderer.gameObject.SetActive(false);
+    }
 
     private void Awake()
     {
@@ -34,6 +55,22 @@ public class PlayerController : MonoBehaviour
         GetComponent<CapsuleCollider2D>().size = new Vector2(0.85f, 0.85f);
 
         ApplyZeroFrictionMaterial();
+        DiscoverVisuals();
+    }
+
+    private void DiscoverVisuals()
+    {
+        Transform vis = transform.Find("Visual");
+        if (vis == null) return;
+
+        bodyRenderer      = vis.Find("Body")?.GetComponent<SpriteRenderer>();
+        faceRenderer      = vis.Find("Face")?.GetComponent<SpriteRenderer>();
+        Transform psT     = vis.Find("PeaceSign");
+        if (psT != null) peaceSignRenderer = psT.GetComponent<SpriteRenderer>();
+        bobScript = vis.GetComponent<CubbyBob>();
+
+        if (faceRenderer != null && faceHappy != null)
+            faceRenderer.sprite = faceHappy;
     }
 
     // Zero friction stops the player's box corners from "gripping" tile seam edges.
@@ -42,8 +79,8 @@ public class PlayerController : MonoBehaviour
     {
         var mat = new PhysicsMaterial2D("PlayerNoFriction")
         {
-            friction       = 0f,
-            bounciness     = 0f,
+            friction        = 0f,
+            bounciness      = 0f,
             frictionCombine = PhysicsMaterialCombine2D.Minimum
         };
         GetComponent<CapsuleCollider2D>().sharedMaterial = mat;
@@ -102,7 +139,6 @@ public class PlayerController : MonoBehaviour
     [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
     private void LogTurn(string hitName, ContactPoint2D contact, float absNx)
     {
-        // angle_from_vertical: 0° = pure floor/ceiling, 90° = pure wall
         float angleDeg = Mathf.Asin(absNx) * Mathf.Rad2Deg;
         Debug.Log(
             $"[PlayerController] TURN  hit={hitName}" +
@@ -116,19 +152,19 @@ public class PlayerController : MonoBehaviour
     public void FlipDirection()
     {
         direction *= -1;
-        // Mirror the sprite so the player faces the direction it's moving
-        Vector3 s = transform.localScale;
-        s.x *= -1f;
-        transform.localScale = s;
+        bool flipped = direction < 0;
+        if (bodyRenderer      != null) bodyRenderer.flipX      = flipped;
+        if (faceRenderer      != null) faceRenderer.flipX      = flipped;
+        if (peaceSignRenderer != null) peaceSignRenderer.flipX = flipped;
     }
 
     public void Die()
     {
         IsAlive = false;
         rb.linearVelocity = Vector2.zero;
-        rb.gravityScale = 0f;
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.enabled = false;
+        rb.gravityScale   = 0f;
+        if (faceRenderer != null && faceShocked != null) faceRenderer.sprite = faceShocked;
+        if (bobScript    != null) bobScript.enabled = false;
         GameManager.Instance?.OnPlayerDied();
     }
 
@@ -136,7 +172,9 @@ public class PlayerController : MonoBehaviour
     {
         IsAlive = false;
         rb.linearVelocity = Vector2.zero;
-        rb.gravityScale = 0f;
+        rb.gravityScale   = 0f;
+        if (faceRenderer != null && faceSmileBig != null) faceRenderer.sprite = faceSmileBig;
+        if (bobScript    != null) bobScript.enabled = false;
         GameManager.Instance?.OnLevelComplete();
     }
 }

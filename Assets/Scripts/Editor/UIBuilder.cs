@@ -3,6 +3,8 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 /// <summary>
@@ -16,7 +18,10 @@ using UnityEngine.UI;
 ///   • TextMeshPro Essential Resources must be imported
 ///     (Window ▸ TextMeshPro ▸ Import TMP Essential Resources).
 ///
-/// SAFE TO RE-RUN: destroys any existing "UIRoot" before rebuilding.
+/// SAFE TO RE-RUN: reuses the existing UIRoot and any screens already inside it.
+/// Only missing screens are created — existing screens (and their button listeners)
+/// are left intact.  UIManager references are always re-wired.
+/// GameManager is never touched, so the Levels array is preserved.
 /// </summary>
 public static class UIBuilder
 {
@@ -40,92 +45,115 @@ public static class UIBuilder
     [MenuItem("Blockavist/5. Build UI")]
     public static void BuildUI()
     {
-        // Remove stale UIRoot if re-running
-        var old = GameObject.Find("UIRoot");
-        if (old != null) Object.DestroyImmediate(old);
+        // ── EventSystem ───────────────────────────────────────────────────────
+        EnsureEventSystem();
 
-        // Add service singletons if not already in scene.
-        // UIManager is created here (before screen builders) so BuildGameHUD
-        // can reference the real component for a persistent listener.
+        // ── Service singletons ────────────────────────────────────────────────
+        // UIManager is resolved before screen builders so BuildGameHUD can
+        // reference the real component for a persistent listener.
         EnsureComponent<ProgressManager>("ProgressManager");
         EnsureComponent<AudioManager>   ("AudioManager");
+        EnsureComponent<AdsManager>     ("AdsManager");
         var uiManagerGO   = EnsureComponent<UIManager>("UIManager");
         var uiManagerComp = uiManagerGO.GetComponent<UIManager>();
 
-        // Root Canvas
-        var root  = CreateCanvas("UIRoot", sortOrder: 10);
+        // ── Root Canvas (reuse if present) ────────────────────────────────────
+        var existingRoot = GameObject.Find("UIRoot");
+        var root  = existingRoot != null ? existingRoot : CreateCanvas("UIRoot", sortOrder: 10);
         var rootT = root.transform;
 
-        // Fade overlay (always on top — sorted above everything else)
-        var fadeGO    = PanelFull(rootT, "FadeOverlay", Color.black);
-        var fadeCG    = fadeGO.gameObject.AddComponent<CanvasGroup>();
-        fadeCG.alpha  = 0f;
-        fadeCG.blocksRaycasts = false;
-        // Put fade on a separate higher-sorted canvas
-        var fadeCanvasComp = fadeGO.gameObject.AddComponent<Canvas>();
-        fadeCanvasComp.overrideSorting = true;
-        fadeCanvasComp.sortingOrder    = 99;
-        fadeGO.gameObject.AddComponent<GraphicRaycaster>();
+        // ── Fade overlay ──────────────────────────────────────────────────────
+        // Reuse if present; only add components on first creation.
+        var fadeT  = rootT.Find("FadeOverlay");
+        CanvasGroup fadeCG;
+        if (fadeT != null)
+        {
+            fadeCG = fadeT.GetComponent<CanvasGroup>();
+        }
+        else
+        {
+            var fadeRT = PanelFull(rootT, "FadeOverlay", Color.black);
+            fadeCG            = fadeRT.gameObject.AddComponent<CanvasGroup>();
+            fadeCG.alpha      = 0f;
+            fadeCG.blocksRaycasts = false;
+            var fadeCanvas    = fadeRT.gameObject.AddComponent<Canvas>();
+            fadeCanvas.overrideSorting = true;
+            fadeCanvas.sortingOrder    = 99;
+            fadeRT.gameObject.AddComponent<GraphicRaycaster>();
+        }
 
-        // ── Screens ───────────────────────────────────────────────────────────
-        var loadingGO  = BuildLoadingScreen (rootT);
-        var mainMenuGO = BuildMainMenu      (rootT);
-        var wsGO       = BuildWorldSelect   (rootT);
-        var lsGO       = BuildLevelSelect   (rootT);
-        var gameHUD    = BuildGameHUD       (rootT, uiManagerComp);
+        // ── Screens — find existing or build missing ──────────────────────────
+        // Existing screens keep their GameObjects, components, and button
+        // listeners intact.  Only absent screens are built from scratch.
+        var loadingGO     = FindOrCreate(rootT, "LoadingScreen",      () => BuildLoadingScreen(rootT));
+        var mainMenuGO    = FindOrCreate(rootT, "MainMenuScreen",     () => BuildMainMenu(rootT));
+        var wsGO          = FindOrCreate(rootT, "WorldSelectScreen",  () => BuildWorldSelect(rootT));
+        var lsGO          = FindOrCreate(rootT, "LevelSelectScreen",  () => BuildLevelSelect(rootT));
+        RewireLevelSelectButtons(lsGO); // always refreshed — repairs lost refs on existing screens
+        var gameHUD       = FindOrCreate(rootT, "GameHUD",            () => BuildGameHUD(rootT, uiManagerComp));
+        var settingsGO    = FindOrCreate(rootT, "SettingsPanel",      () => BuildSettingsPanel(rootT));
+        var pauseGO       = FindOrCreate(rootT, "PausePanel",         () => BuildPausePanel(rootT));
+        var countdownGO   = FindOrCreate(rootT, "CountdownPanel",     () => BuildCountdownPanel(rootT));
+        var lvlCompleteGO = FindOrCreate(rootT, "LevelCompletePanel", () => BuildLevelCompletePanel(rootT));
+        var gameOverGO    = FindOrCreate(rootT, "GameOverPanel",      () => BuildGameOverPanel(rootT));
+        var tutorialGO    = FindOrCreate(rootT, "TutorialPanel",      () => BuildTutorialPanel(rootT));
 
-        // ── Overlays ──────────────────────────────────────────────────────────
-        var settingsGO     = BuildSettingsPanel    (rootT);
-        var pauseGO        = BuildPausePanel       (rootT);
-        var countdownGO    = BuildCountdownPanel   (rootT);
-        var lvlCompleteGO  = BuildLevelCompletePanel(rootT);
-        var gameOverGO     = BuildGameOverPanel    (rootT);
-        var tutorialGO     = BuildTutorialPanel    (rootT);
-
-        // Hide everything except loading
-        mainMenuGO.SetActive(false);
-        wsGO      .SetActive(false);
-        lsGO      .SetActive(false);
-        gameHUD   .SetActive(false);
-        settingsGO.SetActive(false);
-        pauseGO   .SetActive(false);
+        // ── Initial active states ─────────────────────────────────────────────
+        loadingGO    .SetActive(true);
+        mainMenuGO   .SetActive(false);
+        wsGO         .SetActive(false);
+        lsGO         .SetActive(false);
+        gameHUD      .SetActive(false);
+        settingsGO   .SetActive(false);
+        pauseGO      .SetActive(false);
         countdownGO  .SetActive(false);
         lvlCompleteGO.SetActive(false);
         gameOverGO   .SetActive(false);
         tutorialGO   .SetActive(false);
 
-        // ── UIManager wiring ──────────────────────────────────────────────────
+        // ── UIManager wiring (always refreshed) ───────────────────────────────
         var so = new SerializedObject(uiManagerComp);
-
-        SetObjRef(so, "loadingScreen",        loadingGO .GetComponent<LoadingScreenUI>());
-        SetObjRef(so, "mainMenu",             mainMenuGO.GetComponent<MainMenuUI>());
-        SetObjRef(so, "worldSelect",          wsGO      .GetComponent<WorldSelectUI>());
-        SetObjRef(so, "levelSelect",          lsGO      .GetComponent<LevelSelectUI>());
-        SetObjRef(so, "gameHUD",              gameHUD);
-        SetObjRef(so, "settingsPanel",        settingsGO    .GetComponent<SettingsUI>());
-        SetObjRef(so, "pausePanel",           pauseGO       .GetComponent<PauseUI>());
-        SetObjRef(so, "levelCompletePanel",   lvlCompleteGO .GetComponent<LevelCompleteUI>());
-        SetObjRef(so, "gameOverPanel",        gameOverGO    .GetComponent<GameOverUI>());
-        SetObjRef(so, "countdownPanel",       countdownGO   .GetComponent<CountdownUI>());
-        SetObjRef(so, "tutorialPanel",        tutorialGO    .GetComponent<TutorialUI>());
-        SetObjRef(so, "fadeOverlay",          fadeCG);
+        SetObjRef(so, "loadingScreen",      loadingGO    .GetComponent<LoadingScreenUI>());
+        SetObjRef(so, "mainMenu",           mainMenuGO   .GetComponent<MainMenuUI>());
+        SetObjRef(so, "worldSelect",        wsGO         .GetComponent<WorldSelectUI>());
+        SetObjRef(so, "levelSelect",        lsGO         .GetComponent<LevelSelectUI>());
+        SetObjRef(so, "gameHUD",            gameHUD);
+        SetObjRef(so, "settingsPanel",      settingsGO   .GetComponent<SettingsUI>());
+        SetObjRef(so, "pausePanel",         pauseGO      .GetComponent<PauseUI>());
+        SetObjRef(so, "levelCompletePanel", lvlCompleteGO.GetComponent<LevelCompleteUI>());
+        SetObjRef(so, "gameOverPanel",      gameOverGO   .GetComponent<GameOverUI>());
+        SetObjRef(so, "countdownPanel",     countdownGO  .GetComponent<CountdownUI>());
+        SetObjRef(so, "tutorialPanel",      tutorialGO   .GetComponent<TutorialUI>());
+        SetObjRef(so, "fadeOverlay",        fadeCG);
         so.ApplyModifiedProperties();
-
         EditorUtility.SetDirty(uiManagerGO);
 
-        // ── TutorialManager — attach to GameManager GO and wire panel ─────────
+        // ── TutorialManager — wire panel reference ────────────────────────────
+        // Only TutorialManager is marked dirty — NOT the GameManager GO — so
+        // the Levels array and other GameManager fields are never disturbed.
         var gmGO        = EnsureComponent<GameManager>("GameManager");
         var tutorialMgr = gmGO.GetComponent<TutorialManager>();
         if (tutorialMgr == null) tutorialMgr = gmGO.AddComponent<TutorialManager>();
         var soTM = new SerializedObject(tutorialMgr);
         SetObjRef(soTM, "tutorialPanel", tutorialGO.GetComponent<TutorialUI>());
         soTM.ApplyModifiedProperties();
-        EditorUtility.SetDirty(gmGO);
+        EditorUtility.SetDirty(tutorialMgr); // component-level dirty, not the whole GO
 
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
 
         Debug.Log("[Blockavist] UI built successfully. Save the scene (Ctrl+S).");
+    }
+
+    /// <summary>
+    /// Returns the existing child named <paramref name="name"/> under
+    /// <paramref name="parent"/>, or runs <paramref name="create"/> and returns
+    /// its result if no such child exists.
+    /// </summary>
+    static GameObject FindOrCreate(Transform parent, string name, System.Func<GameObject> create)
+    {
+        var existing = parent.Find(name);
+        return existing != null ? existing.gameObject : create();
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -648,6 +676,75 @@ public static class UIBuilder
     {
         var p = so.FindProperty(prop);
         if (p != null) p.objectReferenceValue = value;
+    }
+
+    // Re-wires the levelButtons array and OnClicked listeners for every Level_XX
+    // cell inside LevelGrid.  Called on every Build UI run so that a screen that
+    // survived FindOrCreate always has correct serialized refs, even if a prior
+    // destroy-and-rebuild run left the array empty.
+    static void RewireLevelSelectButtons(GameObject lsGO)
+    {
+        var ui = lsGO.GetComponent<LevelSelectUI>();
+        if (ui == null) return;
+
+        var gridT = lsGO.transform.Find("LevelGrid");
+        if (gridT == null) return;
+
+        var buttonRefs = new LevelButtonUI[10];
+        for (int i = 0; i < 10; i++)
+        {
+            int lvlNum = i + 1;
+            var cellT  = gridT.Find($"Level_{lvlNum:00}");
+            if (cellT == null) continue;
+
+            var btn   = cellT.GetComponent<Button>();
+            var btnUI = cellT.GetComponent<LevelButtonUI>();
+            if (btn == null || btnUI == null) continue;
+
+            buttonRefs[i] = btnUI;
+
+            // Re-wire LevelButtonUI's serialized fields from its own children
+            var numTmpGO  = cellT.Find($"TMP_{lvlNum}");
+            var lockTmpGO = cellT.Find("TMP_[L]");
+            var soBtn = new SerializedObject(btnUI);
+            SetObjRef(soBtn, "button",     btn);
+            if (numTmpGO  != null) SetObjRef(soBtn, "numberText", numTmpGO .GetComponent<TextMeshProUGUI>());
+            if (lockTmpGO != null) SetObjRef(soBtn, "lockIcon",   lockTmpGO.gameObject);
+            soBtn.ApplyModifiedProperties();
+
+            // Ensure exactly one OnClicked persistent listener (remove stale, re-add)
+            UnityEventTools.RemovePersistentListener(btn.onClick, btnUI.OnClicked);
+            UnityEventTools.AddPersistentListener   (btn.onClick, btnUI.OnClicked);
+        }
+
+        // Re-wire the LevelSelectUI.levelButtons array
+        var soUI     = new SerializedObject(ui);
+        var btnsProp = soUI.FindProperty("levelButtons");
+        btnsProp.arraySize = 10;
+        for (int i = 0; i < 10; i++)
+            btnsProp.GetArrayElementAtIndex(i).objectReferenceValue = buttonRefs[i];
+        soUI.ApplyModifiedProperties();
+    }
+
+    // Creates an EventSystem with InputSystemUIInputModule if none exists.
+    // If one already exists, replaces any legacy StandaloneInputModule with
+    // InputSystemUIInputModule so it works with the new Input System package.
+    static void EnsureEventSystem()
+    {
+        var es = Object.FindAnyObjectByType<EventSystem>();
+        if (es == null)
+        {
+            var go = new GameObject("EventSystem");
+            go.AddComponent<EventSystem>();
+            es = go.GetComponent<EventSystem>();
+        }
+
+        // Remove legacy module if present — it conflicts with the new Input System
+        var legacy = es.GetComponent<StandaloneInputModule>();
+        if (legacy != null) Object.DestroyImmediate(legacy);
+
+        if (es.GetComponent<InputSystemUIInputModule>() == null)
+            es.gameObject.AddComponent<InputSystemUIInputModule>();
     }
 
     // Ensures a singleton component exists in the scene; returns the GameObject.

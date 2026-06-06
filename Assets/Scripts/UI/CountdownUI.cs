@@ -23,6 +23,7 @@ public class CountdownUI : MonoBehaviour
         // Freeze player immediately (player may still be falling to floor — gravity stays active)
         var player = LevelManager.Instance?.ActivePlayer;
         player?.Freeze();
+        player?.ShowPeaceSign();
 
         string[] steps    = { "3", "2", "1", "GO!" };
         float[]  durations = { 0.9f, 0.9f, 0.9f, 0.5f };
@@ -34,6 +35,7 @@ public class CountdownUI : MonoBehaviour
         }
 
         // Unfreeze — only if still the same player (could be null if level was aborted)
+        LevelManager.Instance?.ActivePlayer?.HidePeaceSign();
         LevelManager.Instance?.ActivePlayer?.Unfreeze();
 
         if (countdownText != null) countdownText.text = string.Empty;
