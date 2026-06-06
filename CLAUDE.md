@@ -2,6 +2,8 @@
 
 ## Project Overview
 
+**Player character name: Cubby**
+
 Blockavist is a mobile puzzle game for Android. The player guides a character that moves automatically through levels. The player's task is to tap/destroy elements in the level with their finger so the character can reach the goal. The game will be released on Google Play Store as a free app monetized with ads.
 
 **Engine:** Unity 6000.3.11f1 LTS  
@@ -169,21 +171,35 @@ New world = new folder of ScriptableObject assets + new world node in UI. No arc
 - [ ] LevelManager
 - [ ] First 5 levels (World 1)
 
-### Phase 3 — UI & Navigation
-- [ ] Main Menu
-- [ ] World Select + Level Select
-- [ ] Level Complete + Game Over screens
-- [ ] Level lock/unlock system
+### Phase 3 — UI & Navigation ✅
+- [x] Main Menu
+- [x] World Select + Level Select
+- [x] Level Complete + Game Over screens
+- [x] Level lock/unlock system
+- [x] Countdown timer before level starts (3-2-1) — player frozen until GO
+- [x] ProgressManager (PlayerPrefs)
+- [x] AudioManager (music/sfx toggles)
 
 ### Phase 4 — Content
 - [ ] All 20 levels designed and implemented
 - [ ] Difficulty curve testing
 
-### Phase 5 — Monetization & Release
-- [ ] AdMob integration
-- [ ] Android build & optimization
+### Phase 5 — Monetization
+- [ ] AdMob integration (interstitial every 3rd level)
+- [ ] Android build & test on device
+
+### Phase 6 — Art, Audio & Polish
+- [ ] Replace placeholder primitives with purchased assets
+- [ ] Sound effects (tap, destroy, death, level complete)
+- [ ] Background music
+- [ ] Particle effects (tile destroy, goal reached)
+- [ ] UI polish
+
+### Phase 7 — Release
 - [ ] Google Play Console account + Store listing
+- [ ] Screenshots & store art
 - [ ] Age rating, privacy policy
+- [ ] Final Android build & optimization
 - [ ] Release
 
 ---

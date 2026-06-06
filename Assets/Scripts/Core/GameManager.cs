@@ -58,6 +58,7 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[Blockavist] Level {CurrentLevelNumber} complete!");
 
         ProgressManager.Instance?.UnlockNextLevel(CurrentLevelNumber);
+        AdsManager.Instance?.OnLevelComplete();
         UIManager.Instance?.ShowLevelComplete();
         // No Invoke / auto-advance: LevelCompleteUI drives progression via LoadNextLevel()
     }
