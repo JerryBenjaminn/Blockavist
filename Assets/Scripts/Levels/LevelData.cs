@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // ── Tile catalogue ────────────────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ public struct TileEntry
 /// All data needed to build one level.  One .asset file per level.
 /// Adding a new level = new asset, zero code changes.
 /// </summary>
-[CreateAssetMenu(fileName = "Level_01", menuName = "Blockavist/Level Data")]
+[CreateAssetMenu(fileName = "Level_01", menuName = "Cubby's Blocks/Level Data")]
 public class LevelData : ScriptableObject
 {
     [Header("Identity")]

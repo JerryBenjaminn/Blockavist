@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
@@ -7,8 +7,8 @@ using UnityEngine;
 /// <summary>
 /// Editor utility that creates all tile/player prefabs and the clean GameScene.
 ///
-/// Menu: Blockavist ▸ 1. Build All Prefabs
-///       Blockavist ▸ 2. Create GameScene
+/// Menu: Cubby's Blocks ▸ 1. Build All Prefabs
+///       Cubby's Blocks ▸ 2. Create GameScene
 ///
 /// Run (1) first so the prefabs exist before you open (2) and start placing tiles.
 /// </summary>
@@ -21,7 +21,7 @@ public static class PrefabBuilder
 
     // ── 1. Build All Prefabs ──────────────────────────────────────────────────
 
-    [MenuItem("Blockavist/1. Build All Prefabs")]
+    [MenuItem("Cubby's Blocks/1. Build All Prefabs")]
     public static void BuildAllPrefabs()
     {
         Directory.CreateDirectory(Path.Combine(Application.dataPath, "Prefabs"));
@@ -49,12 +49,12 @@ public static class PrefabBuilder
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("[Blockavist] Prefabs built in Assets/Prefabs/");
+        Debug.Log("[Cubby's Blocks] Prefabs built in Assets/Prefabs/");
     }
 
     // ── 2. Create GameScene ───────────────────────────────────────────────────
 
-    [MenuItem("Blockavist/2. Create GameScene")]
+    [MenuItem("Cubby's Blocks/2. Create GameScene")]
     public static void CreateGameScene()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -85,7 +85,7 @@ public static class PrefabBuilder
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddSceneToBuildSettings(ScenePath);
 
-        Debug.Log($"[Blockavist] GameScene saved to {ScenePath}");
+        Debug.Log($"[Cubby's Blocks] GameScene saved to {ScenePath}");
     }
 
     // ── Tile Helpers ──────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ public static class PrefabBuilder
 
         PrefabUtility.SaveAsPrefabAsset(go, path, out bool ok);
         Object.DestroyImmediate(go);
-        if (!ok) Debug.LogError($"[Blockavist] Failed to save: {path}");
+        if (!ok) Debug.LogError($"[Cubby's Blocks] Failed to save: {path}");
     }
 
     private static void CreateFacedTilePrefab<T>(
@@ -137,7 +137,7 @@ public static class PrefabBuilder
 
         PrefabUtility.SaveAsPrefabAsset(go, path, out bool ok);
         Object.DestroyImmediate(go);
-        if (!ok) Debug.LogError($"[Blockavist] Failed to save: {path}");
+        if (!ok) Debug.LogError($"[Cubby's Blocks] Failed to save: {path}");
     }
 
     // ── Player Helper ─────────────────────────────────────────────────────────
@@ -198,7 +198,7 @@ public static class PrefabBuilder
 
         PrefabUtility.SaveAsPrefabAsset(go, path, out bool ok);
         Object.DestroyImmediate(go);
-        if (!ok) Debug.LogError("[Blockavist] Failed to save Player prefab.");
+        if (!ok) Debug.LogError("[Cubby's Blocks] Failed to save Player prefab.");
     }
 
     /// <summary>Creates (or loads) Assets/Animations/CubbyBob.controller with a looping Y-position bob clip.</summary>

@@ -1,9 +1,9 @@
-using System.IO;
+﻿using System.IO;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Menu: Blockavist ▸ 6. Build VFX Prefabs
+/// Menu: Cubby's Blocks ▸ 6. Build VFX Prefabs
 ///
 /// Creates three particle-system prefabs in Assets/Prefabs/VFX/ using only
 /// Unity's built-in Particle System modules — no external assets needed.
@@ -16,7 +16,7 @@ public static class VFXBuilder
 {
     private const string VFXDir = "Assets/Prefabs/VFX";
 
-    [MenuItem("Blockavist/6. Build VFX Prefabs")]
+    [MenuItem("Cubby's Blocks/6. Build VFX Prefabs")]
     public static void BuildVFXPrefabs()
     {
         Directory.CreateDirectory(Path.Combine(Application.dataPath, "Prefabs/VFX"));
@@ -31,7 +31,7 @@ public static class VFXBuilder
 
         WireVFXManager();
 
-        Debug.Log("[Blockavist] VFX prefabs built in Assets/Prefabs/VFX/. Save the scene (Ctrl+S).");
+        Debug.Log("[Cubby's Blocks] VFX prefabs built in Assets/Prefabs/VFX/. Save the scene (Ctrl+S).");
     }
 
     // ── Tile Destroy ──────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ public static class VFXBuilder
         var vfxMgr = Object.FindAnyObjectByType<VFXManager>();
         if (vfxMgr == null)
         {
-            Debug.Log("[Blockavist] VFXManager not found — run '5. Build UI' first, then re-run '6. Build VFX Prefabs'.");
+            Debug.Log("[Cubby's Blocks] VFXManager not found — run '5. Build UI' first, then re-run '6. Build VFX Prefabs'.");
             return;
         }
 
@@ -247,6 +247,6 @@ public static class VFXBuilder
     {
         PrefabUtility.SaveAsPrefabAsset(go, path, out bool ok);
         Object.DestroyImmediate(go);
-        if (!ok) Debug.LogError($"[Blockavist] Failed to save: {path}");
+        if (!ok) Debug.LogError($"[Cubby's Blocks] Failed to save: {path}");
     }
 }

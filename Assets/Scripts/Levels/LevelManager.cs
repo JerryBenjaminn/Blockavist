@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Instantiates and tears down level content from a LevelData asset.
 /// Lives in GameScene alongside GameManager.  Assign tile/player prefabs
-/// in the inspector (or run Blockavist ▸ 1. Build All Prefabs first, then
-/// Blockavist ▸ 2. Create GameScene to get them wired up automatically).
+/// in the inspector (or run Cubby's Blocks ▸ 1. Build All Prefabs first, then
+/// Cubby's Blocks ▸ 2. Create GameScene to get them wired up automatically).
 /// </summary>
 public class LevelManager : MonoBehaviour
 {

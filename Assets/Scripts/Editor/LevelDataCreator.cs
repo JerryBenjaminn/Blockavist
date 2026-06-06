@@ -1,10 +1,10 @@
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Menu: Blockavist ▸ 3. Create Level Data Assets
+/// Menu: Cubby's Blocks ▸ 3. Create Level Data Assets
 ///
 /// Creates the first five LevelData assets under Assets/Levels/World1/.
 /// Run this AFTER "1. Build All Prefabs" so LevelManager prefab refs already exist.
@@ -21,7 +21,7 @@ public static class LevelDataCreator
 {
     private const string OutDir = "Assets/Levels/World1";
 
-    [MenuItem("Blockavist/3. Create Level Data Assets")]
+    [MenuItem("Cubby's Blocks/3. Create Level Data Assets")]
     public static void CreateAllLevels()
     {
         Directory.CreateDirectory(Path.Combine(Application.dataPath, "Levels/World1"));
@@ -35,7 +35,7 @@ public static class LevelDataCreator
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("[Blockavist] World 1 levels 1–5 created in Assets/Levels/World1/");
+        Debug.Log("[Cubby's Blocks] World 1 levels 1–5 created in Assets/Levels/World1/");
     }
 
     // ── Level definitions ─────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ public static class LevelDataCreator
     //   EL5 – spike on upper floor; tap the bridge tile to fall safely to goal
     // ═════════════════════════════════════════════════════════════════════════
 
-    [MenuItem("Blockavist/4. Create Example Levels")]
+    [MenuItem("Cubby's Blocks/4. Create Example Levels")]
     public static void CreateExampleLevels()
     {
         Directory.CreateDirectory(Path.Combine(Application.dataPath, "Levels/World1"));
@@ -208,7 +208,7 @@ public static class LevelDataCreator
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("[Blockavist] Example levels 1–5 created in Assets/Levels/World1/");
+        Debug.Log("[Cubby's Blocks] Example levels 1–5 created in Assets/Levels/World1/");
     }
 
     // ── EL1 — FIRST TAP ──────────────────────────────────────────────────────

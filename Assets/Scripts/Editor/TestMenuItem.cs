@@ -1,15 +1,15 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 public static class TestMenuItem
 {
-    [MenuItem("Blockavist/Test")]
+    [MenuItem("Cubby's Blocks/Test")]
     public static void Test()
     {
         Debug.Log("Claude Code is working");
     }
 
-    [MenuItem("Blockavist/Debug/Clear PlayerPrefs")]
+    [MenuItem("Cubby's Blocks/Debug/Clear PlayerPrefs")]
     public static void ClearPlayerPrefs()
     {
         // DeleteAll() may target a different store when called from Edit mode on some
@@ -23,6 +23,6 @@ public static class TestMenuItem
         // Read back immediately to confirm the store was actually cleared.
         int tutorial  = PlayerPrefs.GetInt("Tutorial_L1_Seen", 0);
         int unlocked  = PlayerPrefs.GetInt("unlockedLevel",    0);
-        Debug.Log($"[Blockavist] PlayerPrefs cleared. Verify — Tutorial_L1_Seen={tutorial}  unlockedLevel={unlocked}  (both should be 0)");
+        Debug.Log($"[Cubby's Blocks] PlayerPrefs cleared. Verify — Tutorial_L1_Seen={tutorial}  unlockedLevel={unlocked}  (both should be 0)");
     }
 }

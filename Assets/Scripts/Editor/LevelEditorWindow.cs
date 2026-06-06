@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Visual level editor.  Open via Blockavist ▸ Level Editor.
+/// Visual level editor.  Open via Cubby's Blocks ▸ Level Editor.
 ///
 /// USAGE
 ///   1. Open the window (dockable next to the Scene view is ideal).
@@ -58,7 +58,7 @@ public class LevelEditorWindow : EditorWindow
 
     // ── Open / lifecycle ──────────────────────────────────────────────────────
 
-    [MenuItem("Blockavist/Level Editor")]
+    [MenuItem("Cubby's Blocks/Level Editor")]
     public static void Open()
     {
         var win = GetWindow<LevelEditorWindow>("Level Editor");
@@ -78,7 +78,7 @@ public class LevelEditorWindow : EditorWindow
     {
         // ── Header ───────────────────────────────────────────────────────────
         EditorGUILayout.Space(4);
-        EditorGUILayout.LabelField("▦  Blockavist Level Editor", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("▦  Cubby's Blocks Level Editor", EditorStyles.boldLabel);
         Separator();
 
         // ── Level asset selector ──────────────────────────────────────────────
@@ -103,7 +103,7 @@ public class LevelEditorWindow : EditorWindow
         {
             EditorGUILayout.HelpBox(
                 "Drag a LevelData asset here, or right-click in the Project window\n" +
-                "and choose Create ▸ Blockavist ▸ Level Data.",
+                "and choose Create ▸ Cubby's Blocks ▸ Level Data.",
                 MessageType.Info);
             return;
         }

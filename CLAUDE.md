@@ -1,10 +1,22 @@
-# CLAUDE.md — Blockavist
+# CLAUDE.md — Cubby's Blocks
 
 ## Project Overview
 
-**Player character name: Cubby**
+## Visual Style
 
-Blockavist is a mobile puzzle game for Android. The player guides a character that moves automatically through levels. The player's task is to tap/destroy elements in the level with their finger so the character can reach the goal. The game will be released on Google Play Store as a free app monetized with ads.
+**Art style:** High contrast cartoon, Lego/block-inspired aesthetic. Assets from Kenney Game Assets pack (CC0).
+
+**Cubby design:**
+- Colored block/cube shape with separate face sprite layered on top
+- No walk animation — block character charm is intentional
+- Sprite flips horizontally when changing direction
+- Subtle up-down bob while moving (Unity Animator tween, no spritesheet needed)
+- Expressions: neutral/happy while walking, sad/shocked on death, big smile on level complete
+- Level start: Cubby shows a peace sign gesture during countdown, disappears on GO!
+
+
+
+Cubby's Blocks is a mobile puzzle game for Android. The player guides a character that moves automatically through levels. The player's task is to tap/destroy elements in the level with their finger so the character can reach the goal. The game will be released on Google Play Store as a free app monetized with ads.
 
 **Engine:** Unity 6000.3.11f1 LTS  
 **Target Platform:** Android (Google Play)  
@@ -184,14 +196,14 @@ New world = new folder of ScriptableObject assets + new world node in UI. No arc
 - [ ] All 20 levels designed and implemented
 - [ ] Difficulty curve testing
 
-### Phase 5 — Monetization
-- [ ] AdMob integration (interstitial every 3rd level)
-- [ ] Android build & test on device
+### Phase 5 — Monetization ✅
+- [x] AdMob integration (interstitial every 3rd level)
+- [x] Android build & test on device
 
 ### Phase 6 — Art, Audio & Polish
-- [ ] Replace placeholder primitives with purchased assets
-- [ ] Sound effects (tap, destroy, death, level complete)
-- [ ] Background music
+- [x] Replace placeholder primitives with purchased assets
+- [x] Sound effects (tap, destroy, death, level complete)
+- [x] Background music
 - [ ] Particle effects (tile destroy, goal reached)
 - [ ] UI polish
 

@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Spawns pooled particle effects at world positions.
-/// Prefabs are created by VFXBuilder (Blockavist ▸ 6. Build VFX Prefabs).
+/// Prefabs are created by VFXBuilder (Cubby's Blocks ▸ 6. Build VFX Prefabs).
 /// </summary>
 public class VFXManager : MonoBehaviour
 {

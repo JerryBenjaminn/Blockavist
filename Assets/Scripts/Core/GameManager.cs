@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentState != GameState.Playing) return;
         CurrentState = GameState.GameOver;
-        Debug.Log($"[Blockavist] Game Over — level {CurrentLevelNumber}.");
+        Debug.Log($"[Cubby's Blocks] Game Over — level {CurrentLevelNumber}.");
         UIManager.Instance?.ShowGameOver();
     }
 
@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentState != GameState.Playing) return;
         CurrentState = GameState.LevelComplete;
-        Debug.Log($"[Blockavist] Level {CurrentLevelNumber} complete!");
+        Debug.Log($"[Cubby's Blocks] Level {CurrentLevelNumber} complete!");
 
         ProgressManager.Instance?.UnlockNextLevel(CurrentLevelNumber);
         AdsManager.Instance?.OnLevelComplete();
@@ -102,7 +102,7 @@ public class GameManager : MonoBehaviour
 
         if (currentLevelIndex >= TotalLevels)
         {
-            Debug.Log("[Blockavist] All levels complete — world finished!");
+            Debug.Log("[Cubby's Blocks] All levels complete — world finished!");
             UIManager.Instance?.GoToWorldSelect();
             return;
         }
@@ -116,7 +116,7 @@ public class GameManager : MonoBehaviour
         }
         LevelManager.Instance?.LoadLevel(CurrentLevel);
         UIManager.Instance?.StartLevelSequence();
-        Debug.Log($"[Blockavist] Loading level {CurrentLevelNumber}…");
+        Debug.Log($"[Cubby's Blocks] Loading level {CurrentLevelNumber}…");
     }
 
     /// <summary>Jump to a specific level by 0-based index (called from UIManager.GoToGame).</summary>

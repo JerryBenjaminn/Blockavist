@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
@@ -8,7 +8,7 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 /// <summary>
-/// Menu: Blockavist ▸ 5. Build UI
+/// Menu: Cubby's Blocks ▸ 5. Build UI
 ///
 /// Creates the complete UI Canvas hierarchy in the active scene and wires
 /// all UIManager/screen script references automatically.
@@ -31,20 +31,53 @@ public static class UIBuilder
     // Colour palette
     private static readonly Color BgDark        = new Color(0.08f, 0.08f, 0.13f);
     private static readonly Color BgMid         = new Color(0.13f, 0.13f, 0.20f);
-    private static readonly Color CardBg         = new Color(0.18f, 0.18f, 0.27f);
-    private static readonly Color AccentBlue     = new Color(0.20f, 0.55f, 1.00f);
-    private static readonly Color AccentGreen    = new Color(0.15f, 0.78f, 0.35f);
-    private static readonly Color AccentRed      = new Color(0.85f, 0.22f, 0.22f);
-    private static readonly Color AccentYellow   = new Color(1.00f, 0.82f, 0.10f);
-    private static readonly Color AccentOrange   = new Color(1.00f, 0.55f, 0.10f);
-    private static readonly Color White          = Color.white;
-    private static readonly Color DimOverlay     = new Color(0f, 0f, 0f, 0.72f);
+    private static readonly Color CardBg        = new Color(0.96f, 0.96f, 0.99f);   // light panel background
+    private static readonly Color CardText      = new Color(0.10f, 0.12f, 0.18f);   // dark text for light cards
+    private static readonly Color AccentBlue    = new Color(0.20f, 0.55f, 1.00f);
+    private static readonly Color AccentGreen   = new Color(0.15f, 0.78f, 0.35f);
+    private static readonly Color AccentRed     = new Color(0.85f, 0.22f, 0.22f);
+    private static readonly Color AccentYellow  = new Color(1.00f, 0.82f, 0.10f);
+    private static readonly Color AccentOrange  = new Color(1.00f, 0.55f, 0.10f);
+    private static readonly Color White         = Color.white;
+    private static readonly Color DimOverlay    = new Color(0f, 0f, 0f, 0.60f);
+
+    // Sprite assets — loaded once per Build UI run
+    private static Sprite _sprBtnGreen;
+    private static Sprite _sprBtnBlue;
+    private static Sprite _sprBtnRed;
+    private static Sprite _sprCheckGreen;
+    private static Sprite _sprCheckRed;
+    private static Sprite _sprStarFull;
+    private static Sprite _sprStarEmpty;
+
+    // Font assets — loaded once per Build UI run
+    private static TMP_FontAsset _fontBlocks; // game title / logo
+    private static TMP_FontAsset _fontBold;   // all other UI text
+
+    static void LoadAssets()
+    {
+        _sprBtnGreen   = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/button_rectangle_green.asset");
+        _sprBtnBlue    = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/button_rectangle_blue.asset");
+        _sprBtnRed     = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/button_rectangle_red.asset");
+        _sprCheckGreen = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/check_square_green.asset");
+        _sprCheckRed   = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/check_square_red.asset");
+        _sprStarFull   = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/star_full.asset");
+        _sprStarEmpty  = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/star_empty.asset");
+
+        _fontBlocks = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/Kenney Blocks SDF.asset");
+        _fontBold   = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/Kenney Bold SDF.asset");
+
+        if (_fontBlocks == null) Debug.LogWarning("[Cubby's Blocks] Kenney Blocks SDF not found in Assets/Fonts/");
+        if (_fontBold   == null) Debug.LogWarning("[Cubby's Blocks] Kenney Bold SDF not found in Assets/Fonts/");
+    }
 
     // ── Entry point ───────────────────────────────────────────────────────────
 
-    [MenuItem("Blockavist/5. Build UI")]
+    [MenuItem("Cubby's Blocks/5. Build UI")]
     public static void BuildUI()
     {
+        LoadAssets();
+
         // ── EventSystem ───────────────────────────────────────────────────────
         EnsureEventSystem();
 
@@ -147,7 +180,7 @@ public static class UIBuilder
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
 
-        Debug.Log("[Blockavist] UI built successfully. Save the scene (Ctrl+S).");
+        Debug.Log("[Cubby's Blocks] UI built successfully. Save the scene (Ctrl+S).");
     }
 
     /// <summary>
@@ -171,8 +204,9 @@ public static class UIBuilder
         var root = PanelFull(parent, "LoadingScreen", BgDark).gameObject;
         var ui   = root.AddComponent<LoadingScreenUI>();
 
-        // Title
-        var title = TMP(root.transform, "BLOCKAVIST", 110, AccentBlue);
+        // Title — Kenney Blocks SDF for the logo
+        var title = TMP(root.transform, "Cubby's Blocks", 110, AccentBlue,
+                        TextAlignmentOptions.Center, _fontBlocks);
         Anchored(title.rectTransform, new Vector2(0.5f, 0.62f), new Vector2(900, 130));
 
         // Progress bar background
@@ -209,17 +243,19 @@ public static class UIBuilder
         var root = PanelFull(parent, "MainMenuScreen", BgDark).gameObject;
         var ui   = root.AddComponent<MainMenuUI>();
 
-        TMP(root.transform, "BLOCKAVIST", 120, AccentBlue)
+        // Title — Kenney Blocks SDF for the logo
+        TMP(root.transform, "Cubby's Blocks", 120, AccentBlue,
+            TextAlignmentOptions.Center, _fontBlocks)
             .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.70f), new Vector2(1000, 140)));
 
-        // Play button
-        var playBtn = Btn(root.transform, "PLAY", new Vector2(0.5f, 0.45f),
-                          new Vector2(420, 110), AccentGreen, White, 56);
+        // Play — primary action
+        var playBtn = Btn(root.transform, "PLAY", new Vector2(0.5f, 0.44f),
+                          new Vector2(400, 96), AccentGreen, White, 26, _sprBtnGreen);
         UnityEventTools.AddPersistentListener(playBtn.onClick, ui.OnPlayClicked);
 
-        // Settings button (top-right corner) — text label avoids missing-glyph warning
-        var settingsBtn = Btn(root.transform, "Settings", new Vector2(0.89f, 0.93f),
-                              new Vector2(200, 70), CardBg, White, 36);
+        // Settings — secondary
+        var settingsBtn = Btn(root.transform, "Settings", new Vector2(0.87f, 0.93f),
+                              new Vector2(260, 76), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(settingsBtn.onClick, ui.OnSettingsClicked);
 
         return root;
@@ -231,30 +267,30 @@ public static class UIBuilder
         var root = PanelFull(parent, "SettingsPanel", DimOverlay).gameObject;
         var ui   = root.AddComponent<SettingsUI>();
 
-        // Card
+        // Card — light background, tall enough for title + 2 toggle rows + close button
         var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
-                                 new Vector2(640, 480), CardBg);
+                                 new Vector2(640, 460), CardBg);
 
-        TMP(card, "Settings", 64, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.82f), new Vector2(500, 80)));
+        TMP(card, "Settings", 34, CardText)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.86f), new Vector2(500, 52)));
 
         // Music row
-        var musicLabel  = TMP(card, "Music", 44, White);
-        Anchored(musicLabel.rectTransform, new Vector2(0.3f, 0.58f), new Vector2(260, 60));
+        var musicLabel  = TMP(card, "Music", 26, CardText);
+        Anchored(musicLabel.rectTransform, new Vector2(0.28f, 0.66f), new Vector2(260, 44));
 
-        var musicToggle = CreateToggle(card, new Vector2(0.72f, 0.58f));
+        var musicToggle = CreateToggle(card, new Vector2(0.72f, 0.66f));
         UnityEventTools.AddBoolPersistentListener(musicToggle.onValueChanged, ui.OnMusicToggled, true);
 
         // SFX row
-        var sfxLabel    = TMP(card, "Sound Effects", 44, White);
-        Anchored(sfxLabel.rectTransform, new Vector2(0.3f, 0.40f), new Vector2(260, 60));
+        var sfxLabel    = TMP(card, "Sound Effects", 26, CardText);
+        Anchored(sfxLabel.rectTransform, new Vector2(0.28f, 0.50f), new Vector2(260, 44));
 
-        var sfxToggle   = CreateToggle(card, new Vector2(0.72f, 0.40f));
+        var sfxToggle   = CreateToggle(card, new Vector2(0.72f, 0.50f));
         UnityEventTools.AddBoolPersistentListener(sfxToggle.onValueChanged, ui.OnSFXToggled, true);
 
-        // Close button
-        var closeBtn = Btn(card, "X  Close", new Vector2(0.5f, 0.14f),
-                           new Vector2(260, 72), AccentRed, White, 42);
+        // Close — destructive action
+        var closeBtn = Btn(card, "X  Close", new Vector2(0.5f, 0.16f),
+                           new Vector2(280, 80), AccentRed, White, 24, _sprBtnRed);
         UnityEventTools.AddPersistentListener(closeBtn.onClick, ui.OnCloseClicked);
 
         // Wire toggles
@@ -272,41 +308,41 @@ public static class UIBuilder
         var root = PanelFull(parent, "WorldSelectScreen", BgDark).gameObject;
         var ui   = root.AddComponent<WorldSelectUI>();
 
-        TMP(root.transform, "Select World", 72, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.88f), new Vector2(800, 90)));
+        TMP(root.transform, "Select World", 34, White)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.88f), new Vector2(800, 52)));
 
         // World 1 card
-        var w1Card = PanelAnchored(root.transform, "World1Card", new Vector2(0.5f, 0.64f),
-                                   new Vector2(800, 180), AccentBlue);
-        TMP(w1Card, "World 1  -  Basic Blocks", 50, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.60f), new Vector2(700, 65)));
-        TMP(w1Card, "Levels 1 - 10", 36, new Color(0.85f, 0.95f, 1f))
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.28f), new Vector2(700, 50)));
+        var w1Card = PanelAnchored(root.transform, "World1Card", new Vector2(0.5f, 0.63f),
+                                   new Vector2(800, 160), AccentBlue);
+        TMP(w1Card, "World 1  -  Basic Blocks", 26, White)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.62f), new Vector2(700, 44)));
+        TMP(w1Card, "Levels 1 - 10", 22, new Color(0.85f, 0.95f, 1f))
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.28f), new Vector2(700, 36)));
         var w1Btn = w1Card.gameObject.AddComponent<Button>();
         UnityEventTools.AddPersistentListener(w1Btn.onClick, ui.OnWorld1Clicked);
         if (w1Card.gameObject.GetComponent<Image>() == null)
             w1Card.gameObject.AddComponent<Image>().color = AccentBlue;
 
         // World 2 card
-        var w2Card = PanelAnchored(root.transform, "World2Card", new Vector2(0.5f, 0.38f),
-                                   new Vector2(800, 180), new Color(0.30f, 0.30f, 0.42f));
-        TMP(w2Card, "World 2  -  ???", 50, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.60f), new Vector2(700, 65)));
-        var w2Sub = TMP(w2Card, "Complete World 1 to unlock", 34, new Color(0.7f, 0.7f, 0.85f));
-        Anchored(w2Sub.rectTransform, new Vector2(0.5f, 0.28f), new Vector2(700, 50));
+        var w2Card = PanelAnchored(root.transform, "World2Card", new Vector2(0.5f, 0.40f),
+                                   new Vector2(800, 160), new Color(0.30f, 0.30f, 0.42f));
+        TMP(w2Card, "World 2  -  ???", 26, White)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.62f), new Vector2(700, 44)));
+        var w2Sub = TMP(w2Card, "Complete World 1 to unlock", 22, new Color(0.7f, 0.7f, 0.85f));
+        Anchored(w2Sub.rectTransform, new Vector2(0.5f, 0.28f), new Vector2(700, 36));
 
         // Padlock label (text-based)
-        var lockTxt = TMP(w2Card, "[locked]", 36, new Color(0.9f, 0.8f, 0.2f));
-        Anchored(lockTxt.rectTransform, new Vector2(0.88f, 0.55f), new Vector2(120, 50));
+        var lockTxt = TMP(w2Card, "[locked]", 22, new Color(0.9f, 0.8f, 0.2f));
+        Anchored(lockTxt.rectTransform, new Vector2(0.88f, 0.55f), new Vector2(120, 36));
 
         var w2Btn = w2Card.gameObject.AddComponent<Button>();
         UnityEventTools.AddPersistentListener(w2Btn.onClick, ui.OnWorld2Clicked);
         if (w2Card.gameObject.GetComponent<Image>() == null)
             w2Card.gameObject.AddComponent<Image>().color = new Color(0.30f, 0.30f, 0.42f);
 
-        // Back button
-        var backBtn = Btn(root.transform, "Back", new Vector2(0.12f, 0.92f),
-                          new Vector2(200, 72), CardBg, White, 38);
+        // Back — secondary
+        var backBtn = Btn(root.transform, "Back", new Vector2(0.10f, 0.92f),
+                          new Vector2(240, 80), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(backBtn.onClick, ui.OnBackClicked);
 
         // Wire references
@@ -326,11 +362,12 @@ public static class UIBuilder
         var root = PanelFull(parent, "LevelSelectScreen", BgDark).gameObject;
         var ui   = root.AddComponent<LevelSelectUI>();
 
-        var titleTmp = TMP(root.transform, "World 1", 72, White);
-        Anchored(titleTmp.rectTransform, new Vector2(0.5f, 0.90f), new Vector2(800, 90));
+        var titleTmp = TMP(root.transform, "World 1", 34, White);
+        Anchored(titleTmp.rectTransform, new Vector2(0.5f, 0.90f), new Vector2(800, 52));
 
+        // Back — secondary
         var backBtn = Btn(root.transform, "Back", new Vector2(0.10f, 0.92f),
-                          new Vector2(200, 72), CardBg, White, 38);
+                          new Vector2(240, 80), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(backBtn.onClick, ui.OnBackClicked);
 
         // Grid — 5 columns × 2 rows
@@ -358,20 +395,37 @@ public static class UIBuilder
             cell.transform.SetParent(gridGO.transform, false);
 
             var cellImg = cell.AddComponent<Image>();
-            cellImg.color = CardBg;
+            // Level select cells — blue sprite; fallback to dark card colour
+            if (_sprBtnBlue != null)
+            {
+                cellImg.sprite = _sprBtnBlue;
+                cellImg.type   = Image.Type.Simple;
+                cellImg.color  = Color.white;
+            }
+            else
+            {
+                cellImg.color = new Color(0.18f, 0.18f, 0.27f);
+            }
             cell.AddComponent<RectTransform>();
 
             var btn    = cell.AddComponent<Button>();
+            var colors = ColorBlock.defaultColorBlock;
+            colors.normalColor      = Color.white;
+            colors.highlightedColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+            colors.pressedColor     = new Color(0.75f, 0.75f, 0.75f, 1f);
+            colors.selectedColor    = Color.white;
+            btn.colors = colors;
+
             var btnUI  = cell.AddComponent<LevelButtonUI>();
             buttonRefs[i] = btnUI;
 
             // Number label
-            var numTmp = TMP(cell.transform, lvlNum.ToString(), 56, White);
-            Anchored(numTmp.rectTransform, new Vector2(0.5f, 0.58f), new Vector2(200, 80));
+            var numTmp = TMP(cell.transform, lvlNum.ToString(), 34, White);
+            Anchored(numTmp.rectTransform, new Vector2(0.5f, 0.58f), new Vector2(200, 52));
 
             // Lock icon (hidden by default for first level)
-            var lockTmp = TMP(cell.transform, "[L]", 44, AccentYellow);
-            Anchored(lockTmp.rectTransform, new Vector2(0.5f, 0.25f), new Vector2(80, 60));
+            var lockTmp = TMP(cell.transform, "[L]", 26, AccentYellow);
+            Anchored(lockTmp.rectTransform, new Vector2(0.5f, 0.25f), new Vector2(80, 40));
             lockTmp.gameObject.SetActive(i > 0);
 
             // Wire LevelButtonUI
@@ -410,7 +464,7 @@ public static class UIBuilder
         rt.anchorMax = Vector2.one;
         rt.offsetMin = rt.offsetMax = Vector2.zero;
 
-        // Pause button — top-left corner
+        // Pause button — top-left corner (icon button, no sprite)
         var pauseBtn = Btn(root.transform, "II", new Vector2(0.06f, 0.92f),
                            new Vector2(90, 90), new Color(0.2f, 0.2f, 0.3f, 0.85f), White, 44);
         UnityEventTools.AddPersistentListener(pauseBtn.onClick, uiManager.ShowPause);
@@ -424,18 +478,21 @@ public static class UIBuilder
         var root = PanelFull(parent, "PausePanel", DimOverlay).gameObject;
         var ui   = root.AddComponent<PauseUI>();
 
+        // Card sized to fit title (52px) + gap + resume (88px) + gap + world select (88px) + margins
         var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
-                                 new Vector2(560, 400), CardBg);
+                                 new Vector2(580, 380), CardBg);
 
-        TMP(card, "Paused", 72, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.78f), new Vector2(440, 90)));
+        TMP(card, "Paused", 34, CardText)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.84f), new Vector2(440, 52)));
 
-        var resume = Btn(card, "Resume", new Vector2(0.5f, 0.52f),
-                         new Vector2(400, 96), AccentGreen, White, 46);
+        // Resume — primary action
+        var resume = Btn(card, "Resume", new Vector2(0.5f, 0.57f),
+                         new Vector2(440, 88), AccentGreen, White, 24, _sprBtnGreen);
         UnityEventTools.AddPersistentListener(resume.onClick, ui.OnResumeClicked);
 
-        var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.22f),
-                        new Vector2(400, 80), CardBg, White, 40);
+        // World Select — secondary
+        var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.24f),
+                        new Vector2(440, 88), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(wsBtn.onClick, ui.OnWorldSelectClicked);
 
         return root;
@@ -465,22 +522,48 @@ public static class UIBuilder
         var root = PanelFull(parent, "LevelCompletePanel", DimOverlay).gameObject;
         var ui   = root.AddComponent<LevelCompleteUI>();
 
+        // Card sized to fit title + stars row + two buttons with clear gaps
         var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
-                                 new Vector2(640, 420), CardBg);
+                                 new Vector2(680, 520), CardBg);
 
-        TMP(card, "Level Complete!", 68, AccentGreen)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.80f), new Vector2(580, 85)));
+        TMP(card, "Level Complete!", 34, AccentGreen)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.89f), new Vector2(580, 52)));
 
-        // Stars row (placeholder)
-        TMP(card, "* * *", 72, AccentYellow)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.60f), new Vector2(460, 80)));
+        // Stars row — three Image components (all filled for MVP)
+        var starsGO = new GameObject("StarsRow");
+        starsGO.transform.SetParent(card, false);
+        var starsRT = starsGO.AddComponent<RectTransform>();
+        Anchored(starsRT, new Vector2(0.5f, 0.73f), new Vector2(280, 72));
+        var hlg = starsGO.AddComponent<HorizontalLayoutGroup>();
+        hlg.spacing                = 12f;
+        hlg.childAlignment         = TextAnchor.MiddleCenter;
+        hlg.childControlWidth      = false;
+        hlg.childControlHeight     = false;
+        hlg.childScaleWidth        = false;
+        hlg.childScaleHeight       = false;
+        hlg.childForceExpandWidth  = false;
+        hlg.childForceExpandHeight = false;
 
-        var nextBtn = Btn(card, "Next Level", new Vector2(0.5f, 0.38f),
-                          new Vector2(440, 96), AccentGreen, White, 48);
+        for (int i = 0; i < 3; i++)
+        {
+            var starGO  = new GameObject($"Star_{i + 1}");
+            starGO.transform.SetParent(starsGO.transform, false);
+            var starImg = starGO.AddComponent<Image>();
+            starImg.sprite         = _sprStarFull;
+            starImg.color          = Color.white;
+            starImg.preserveAspect = true;
+            var starRT = starGO.GetComponent<RectTransform>();
+            starRT.sizeDelta = new Vector2(72, 72);
+        }
+
+        // Next Level — primary action
+        var nextBtn = Btn(card, "Next Level", new Vector2(0.5f, 0.50f),
+                          new Vector2(460, 96), AccentGreen, White, 26, _sprBtnGreen);
         UnityEventTools.AddPersistentListener(nextBtn.onClick, ui.OnNextLevelClicked);
 
-        var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.14f),
-                        new Vector2(440, 80), CardBg, White, 40);
+        // World Select — secondary
+        var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.22f),
+                        new Vector2(440, 88), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(wsBtn.onClick, ui.OnWorldSelectClicked);
 
         return root;
@@ -492,18 +575,21 @@ public static class UIBuilder
         var root = PanelFull(parent, "GameOverPanel", DimOverlay).gameObject;
         var ui   = root.AddComponent<GameOverUI>();
 
+        // Card sized to fit title + two buttons with clear gaps
         var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
-                                 new Vector2(600, 400), CardBg);
+                                 new Vector2(620, 400), CardBg);
 
-        TMP(card, "Game Over", 72, AccentRed)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.80f), new Vector2(520, 90)));
+        TMP(card, "Game Over", 34, AccentRed)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.84f), new Vector2(520, 52)));
 
-        var retryBtn = Btn(card, "Retry", new Vector2(0.5f, 0.50f),
-                           new Vector2(440, 96), AccentOrange, White, 48);
+        // Retry — secondary (per design spec)
+        var retryBtn = Btn(card, "Retry", new Vector2(0.5f, 0.56f),
+                           new Vector2(440, 88), AccentOrange, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(retryBtn.onClick, ui.OnRetryClicked);
 
-        var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.20f),
-                        new Vector2(440, 80), CardBg, White, 40);
+        // World Select — secondary
+        var wsBtn = Btn(card, "World Select", new Vector2(0.5f, 0.24f),
+                        new Vector2(440, 88), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(wsBtn.onClick, ui.OnWorldSelectClicked);
 
         return root;
@@ -515,15 +601,17 @@ public static class UIBuilder
         var root = PanelFull(parent, "TutorialPanel", DimOverlay).gameObject;
         var ui   = root.AddComponent<TutorialUI>();
 
+        // Card sized to fit body text + button with clear gap
         var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
-                                 new Vector2(680, 380), CardBg);
+                                 new Vector2(700, 380), CardBg);
 
-        var msgTmp = TMP(card, "Tap yellow blocks to destroy them", 52, White);
-        Anchored(msgTmp.rectTransform, new Vector2(0.5f, 0.64f), new Vector2(580, 160));
+        var msgTmp = TMP(card, "Tap yellow blocks to destroy them", 28, CardText);
+        Anchored(msgTmp.rectTransform, new Vector2(0.5f, 0.65f), new Vector2(600, 120));
         msgTmp.enableWordWrapping = true;
 
-        var confirmBtn = Btn(card, "Got it!", new Vector2(0.5f, 0.22f),
-                             new Vector2(380, 96), AccentGreen, White, 48);
+        // Got it! — primary action
+        var confirmBtn = Btn(card, "Got it!", new Vector2(0.5f, 0.21f),
+                             new Vector2(360, 96), AccentGreen, White, 26, _sprBtnGreen);
         UnityEventTools.AddPersistentListener(confirmBtn.onClick, ui.OnConfirmClicked);
 
         var btnLabelTmp = confirmBtn.GetComponentInChildren<TextMeshProUGUI>();
@@ -588,9 +676,11 @@ public static class UIBuilder
         return rt;
     }
 
-    // TMP text label (fills parent by default)
+    // TMP text label (fills parent by default).
+    // font = null → KenneyBold SDF; pass _fontBlocks explicitly for the game title.
     static TextMeshProUGUI TMP(Transform parent, string text, float size,
-        Color color, TextAlignmentOptions align = TextAlignmentOptions.Center)
+        Color color, TextAlignmentOptions align = TextAlignmentOptions.Center,
+        TMP_FontAsset font = null)
     {
         var go  = new GameObject("TMP_" + text.Replace(" ", "_").Substring(0, Mathf.Min(text.Length, 12)));
         go.transform.SetParent(parent, false);
@@ -599,6 +689,7 @@ public static class UIBuilder
         tmp.fontSize  = size;
         tmp.color     = color;
         tmp.alignment = align;
+        tmp.font      = font ?? _fontBold;
         var rt = go.GetComponent<RectTransform>();
         rt.anchorMin = Vector2.zero;
         rt.anchorMax = Vector2.one;
@@ -606,14 +697,23 @@ public static class UIBuilder
         return tmp;
     }
 
-    // Button with label, placed at anchorPos with given size
+    // Button with label; sprite overrides flat bg when provided
     static Button Btn(Transform parent, string label, Vector2 anchorPos,
-        Vector2 size, Color bg, Color fg, float fontSize)
+        Vector2 size, Color bg, Color fg, float fontSize, Sprite sprite = null)
     {
         var go  = new GameObject("Btn_" + label.Replace(" ", "_").Trim());
         go.transform.SetParent(parent, false);
         var img = go.AddComponent<Image>();
-        img.color = bg;
+        if (sprite != null)
+        {
+            img.sprite = sprite;
+            img.type   = Image.Type.Simple;
+            img.color  = Color.white;
+        }
+        else
+        {
+            img.color = bg;
+        }
         var rt  = go.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(anchorPos.x, anchorPos.y);
         rt.sizeDelta = size;
@@ -621,49 +721,58 @@ public static class UIBuilder
 
         var btn    = go.AddComponent<Button>();
         var colors = ColorBlock.defaultColorBlock;
-        colors.normalColor      = bg;
-        colors.highlightedColor = bg * 1.18f;
-        colors.pressedColor     = bg * 0.80f;
-        colors.selectedColor    = bg;
+        if (sprite != null)
+        {
+            colors.normalColor      = Color.white;
+            colors.highlightedColor = new Color(0.90f, 0.90f, 0.90f, 1f);
+            colors.pressedColor     = new Color(0.75f, 0.75f, 0.75f, 1f);
+            colors.selectedColor    = Color.white;
+        }
+        else
+        {
+            colors.normalColor      = bg;
+            colors.highlightedColor = bg * 1.18f;
+            colors.pressedColor     = bg * 0.80f;
+            colors.selectedColor    = bg;
+        }
         btn.colors = colors;
 
-        TMP(go.transform, label, fontSize, fg);
+        var lbl = TMP(go.transform, label, fontSize, fg);
+        lbl.enableAutoSizing = true;
+        lbl.fontSizeMin      = 20f;
+        lbl.fontSizeMax      = fontSize;
+        lbl.margin           = new Vector4(16f, 0f, 16f, 0f);
         return btn;
     }
 
-    // Toggle with background + checkmark images
+    // Toggle using check_square sprites + ToggleSpriteSwapper
     static Toggle CreateToggle(Transform parent, Vector2 anchorPos)
     {
         var go  = new GameObject("Toggle");
         go.transform.SetParent(parent, false);
         var rt  = go.AddComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = rt.pivot = anchorPos;
-        rt.sizeDelta = new Vector2(120, 60);
+        rt.sizeDelta = new Vector2(80, 80);
         rt.anchoredPosition = Vector2.zero;
 
+        var img = go.AddComponent<Image>();
+        img.sprite         = _sprCheckGreen;
+        img.color          = Color.white;
+        img.preserveAspect = true;
+
         var toggle = go.AddComponent<Toggle>();
-
-        // Background
-        var bgGO  = new GameObject("BG");
-        bgGO.transform.SetParent(go.transform, false);
-        var bgImg = bgGO.AddComponent<Image>();
-        bgImg.color = new Color(0.25f, 0.25f, 0.38f);
-        var bgRT  = bgGO.GetComponent<RectTransform>();
-        bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
-        bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
-
-        // Checkmark (coloured green when on)
-        var ckGO  = new GameObject("Checkmark");
-        ckGO.transform.SetParent(bgGO.transform, false);
-        var ckImg = ckGO.AddComponent<Image>();
-        ckImg.color = AccentGreen;
-        var ckRT  = ckGO.GetComponent<RectTransform>();
-        ckRT.anchorMin = ckRT.anchorMax = ckRT.pivot = Vector2.one * 0.5f;
-        ckRT.sizeDelta = new Vector2(84, 44);
-
-        toggle.targetGraphic = bgImg;
-        toggle.graphic       = ckImg;
+        toggle.targetGraphic = img;
+        toggle.graphic       = null;
+        toggle.transition    = Selectable.Transition.None;
         toggle.isOn          = true;
+
+        // ToggleSpriteSwapper reacts to onValueChanged and swaps the sprite
+        var swapper = go.AddComponent<ToggleSpriteSwapper>();
+        var soSwap  = new SerializedObject(swapper);
+        soSwap.FindProperty("onSprite") .objectReferenceValue = _sprCheckGreen;
+        soSwap.FindProperty("offSprite").objectReferenceValue = _sprCheckRed;
+        soSwap.FindProperty("image")    .objectReferenceValue = img;
+        soSwap.ApplyModifiedProperties();
 
         return toggle;
     }
