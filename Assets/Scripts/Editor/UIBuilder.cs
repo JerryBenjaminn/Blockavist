@@ -54,6 +54,7 @@ public static class UIBuilder
         EnsureComponent<ProgressManager>("ProgressManager");
         EnsureComponent<AudioManager>   ("AudioManager");
         EnsureComponent<AdsManager>     ("AdsManager");
+        EnsureComponent<VFXManager>     ("VFXManager");
         var uiManagerGO   = EnsureComponent<UIManager>("UIManager");
         var uiManagerComp = uiManagerGO.GetComponent<UIManager>();
 

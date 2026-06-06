@@ -166,6 +166,7 @@ public class PlayerController : MonoBehaviour
         if (faceRenderer != null && faceShocked != null) faceRenderer.sprite = faceShocked;
         if (bobScript    != null) bobScript.enabled = false;
         AudioManager.Instance?.PlayCubbyDie();
+        VFXManager.Instance?.SpawnCubbyDeath(transform.position);
         GameManager.Instance?.OnPlayerDied();
     }
 
@@ -177,6 +178,7 @@ public class PlayerController : MonoBehaviour
         if (faceRenderer != null && faceSmileBig != null) faceRenderer.sprite = faceSmileBig;
         if (bobScript    != null) bobScript.enabled = false;
         AudioManager.Instance?.PlayCubbyGoal();
+        VFXManager.Instance?.SpawnGoalReached(transform.position);
         GameManager.Instance?.OnLevelComplete();
     }
 }

@@ -10,6 +10,9 @@ public class DestructibleTile : TileElement
 
     public override void OnPlayerTouch()
     {
+        var sr    = GetComponent<SpriteRenderer>();
+        var tint  = sr != null ? sr.color : Color.white;
+        VFXManager.Instance?.SpawnTileDestroy(transform.position, tint);
         AudioManager.Instance?.PlayPopTile();
         Destroy(gameObject);
     }
