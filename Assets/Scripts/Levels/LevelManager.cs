@@ -16,6 +16,10 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private GameObject destructiblePrefab;
     [SerializeField] private GameObject spikePrefab;
     [SerializeField] private GameObject goalPrefab;
+    [SerializeField] private GameObject jumpPadPrefab;
+    [SerializeField] private GameObject fallingHazardPrefab;
+    [SerializeField] private GameObject explosivePrefab;
+    [SerializeField] private GameObject portalPrefab;
 
     [Header("Player Prefab")]
     [SerializeField] private GameObject playerPrefab;
@@ -83,8 +87,14 @@ public class LevelManager : MonoBehaviour
                 continue;
             }
 
-            Vector3 worldPos = new Vector3(entry.gridPosition.x, entry.gridPosition.y, 0f);
-            Instantiate(prefab, worldPos, Quaternion.identity, levelRoot.transform);
+            Vector3    worldPos = new Vector3(entry.gridPosition.x, entry.gridPosition.y, 0f);
+            GameObject go       = Instantiate(prefab, worldPos, Quaternion.identity, levelRoot.transform);
+
+            if (entry.type == TileType.Portal)
+            {
+                var portal = go.GetComponent<PortalTile>();
+                if (portal != null) portal.PortalId = entry.extraData;
+            }
         }
 
         SpawnPlayer(data.playerSpawnPosition);
@@ -122,6 +132,10 @@ public class LevelManager : MonoBehaviour
         TileType.Destructible   => destructiblePrefab,
         TileType.Spike          => spikePrefab,
         TileType.Goal           => goalPrefab,
+        TileType.JumpPad        => jumpPadPrefab,
+        TileType.FallingHazard  => fallingHazardPrefab,
+        TileType.Explosive      => explosivePrefab,
+        TileType.Portal         => portalPrefab,
         _                       => null
     };
 }

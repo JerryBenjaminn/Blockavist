@@ -27,8 +27,9 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer peaceSignRenderer;
     private CubbyBob       bobScript;
 
-    public bool IsAlive  { get; private set; } = true;
-    public bool IsFrozen { get; private set; } = true;
+    public bool IsAlive   { get; private set; } = true;
+    public bool IsFrozen  { get; private set; } = true;
+    public int  Direction => direction;
 
     /// <summary>Freeze horizontal movement while keeping gravity active (used during countdown).</summary>
     public void Freeze()   => IsFrozen = true;
@@ -126,10 +127,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Goal tile sets isTrigger = true, so goal detection goes through here
+    // Goal tile sets isTrigger = true, so goal detection goes through here.
+    // Any other tile with a trigger collider can respond via OnPlayerTrigger.
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!IsAlive) return;
+
+        TileElement tile = other.GetComponent<TileElement>();
+        if (tile != null)
+            tile.OnPlayerTrigger(this);
+
         if (other.GetComponent<GoalTile>() != null)
             ReachGoal();
     }
@@ -147,6 +154,11 @@ public class PlayerController : MonoBehaviour
             $"  contact_point={contact.point}" +
             $"  threshold={wallNormalThreshold}",
             gameObject);
+    }
+
+    public void ApplyLaunch(float verticalForce)
+    {
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, verticalForce);
     }
 
     public void FlipDirection()

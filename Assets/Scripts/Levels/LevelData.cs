@@ -8,6 +8,10 @@ public enum TileType
     Destructible   = 1,
     Spike          = 2,
     Goal           = 3,
+    JumpPad        = 4,
+    FallingHazard  = 5,
+    Explosive      = 6,
+    Portal         = 7,
 }
 
 [System.Serializable]
@@ -15,6 +19,7 @@ public struct TileEntry
 {
     public TileType    type;
     public Vector2Int  gridPosition; // integer grid coords; world pos = (x, y, 0)
+    public int         extraData;    // Portal: pair ID (0, 1, 2…); other types: unused
 }
 
 // ── Level definition ──────────────────────────────────────────────────────────

@@ -28,7 +28,7 @@ public class LevelEditorWindow : EditorWindow
 
     // ── Paint tools ───────────────────────────────────────────────────────────
 
-    private enum Tool { Indestructible, Destructible, Spike, Goal, Spawn, Erase }
+    private enum Tool { Indestructible, Destructible, Spike, Goal, Spawn, Erase, JumpPad, FallingHazard, Explosive, Portal }
 
     private static readonly Color[] ToolColor = {
         new Color(0.50f, 0.50f, 0.55f, 0.85f),  // Indestructible
@@ -37,15 +37,26 @@ public class LevelEditorWindow : EditorWindow
         new Color(0.10f, 0.85f, 0.25f, 0.85f),  // Goal
         new Color(0.25f, 0.50f, 1.00f, 0.85f),  // Spawn
         new Color(0.80f, 0.20f, 0.20f, 0.50f),  // Erase
+        new Color(1.00f, 0.50f, 0.00f, 0.85f),  // JumpPad (orange)
+        new Color(0.50f, 0.05f, 0.05f, 0.85f),  // FallingHazard (dark red)
+        new Color(0.55f, 0.10f, 0.80f, 0.85f),  // Explosive (purple)
+        new Color(0.00f, 0.85f, 0.85f, 0.85f),  // Portal (cyan)
     };
 
     private static readonly string[] ToolLabel = {
-        "Floor / Wall", "Destructible", "Spike", "Goal", "Spawn", "Erase"
+        "Floor / Wall", "Destructible", "Spike", "Goal", "Spawn", "Erase",
+        "Jump Pad", "Fall Hazard", "Explosive", "Portal"
+    };
+
+    // Display labels for hotkeys — indices 0-4 map to 1-5, index 5 = E, indices 6-9 map to 6-9
+    private static readonly string[] HotKeyLabel = {
+        "1", "2", "3", "4", "5", "E", "6", "7", "8", "9"
     };
 
     private static readonly KeyCode[] HotKey = {
         KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3,
-        KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.E
+        KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.E,
+        KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9
     };
 
     // ── Window state ──────────────────────────────────────────────────────────
@@ -55,6 +66,10 @@ public class LevelEditorWindow : EditorWindow
     private Vector2Int  lastPainted = new Vector2Int(int.MinValue, int.MinValue);
     private Vector3     mouseWorld;
     private bool        mouseInBounds;
+
+    // Portal placement — alternates A / B so pairs always share the same pair ID
+    private int  portalNextPairId = 0;
+    private bool portalPlacingA   = true;
 
     // ── Open / lifecycle ──────────────────────────────────────────────────────
 
@@ -109,17 +124,18 @@ public class LevelEditorWindow : EditorWindow
         }
 
         // ── Palette ───────────────────────────────────────────────────────────
-        EditorGUILayout.LabelField("Tool  (keys: 1-5 / E)", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField("Tool  (keys: 1-9 / E)", EditorStyles.miniLabel);
         EditorGUILayout.Space(2);
 
-        // Two rows of 3 buttons
-        for (int row = 0; row < 2; row++)
+        // Dynamic multi-row palette — 3 buttons per row
+        int toolCount = ToolLabel.Length;
+        for (int row = 0; row * 3 < toolCount; row++)
         {
             GUILayout.BeginHorizontal();
             for (int col = 0; col < 3; col++)
             {
                 int idx = row * 3 + col;
-                if (idx >= ToolLabel.Length) break;
+                if (idx >= toolCount) break;
 
                 bool active = (int)activeTool == idx;
                 var  fill   = ToolColor[idx];
@@ -128,8 +144,7 @@ public class LevelEditorWindow : EditorWindow
                     ? new Color(fill.r, fill.g, fill.b, 1.0f)
                     : new Color(fill.r * 0.5f, fill.g * 0.5f, fill.b * 0.5f, 0.9f);
 
-                string key = HotKey[idx] == KeyCode.E ? "E" : (idx + 1).ToString();
-                if (GUILayout.Button($"{key}: {ToolLabel[idx]}", GUILayout.Height(26)))
+                if (GUILayout.Button($"{HotKeyLabel[idx]}: {ToolLabel[idx]}", GUILayout.Height(26)))
                 {
                     activeTool = (Tool)idx;
                     SceneView.RepaintAll();
@@ -137,6 +152,13 @@ public class LevelEditorWindow : EditorWindow
             }
             GUI.backgroundColor = Color.white;
             GUILayout.EndHorizontal();
+        }
+
+        // Show portal placement state when Portal tool is active
+        if (activeTool == Tool.Portal)
+        {
+            string nextLabel = portalPlacingA ? "A (first of pair)" : "B (second of pair)";
+            EditorGUILayout.HelpBox($"Next portal: {nextLabel}  — Pair ID {portalNextPairId}", MessageType.None);
         }
 
         Separator();
@@ -386,7 +408,24 @@ public class LevelEditorWindow : EditorWindow
         }
         else
         {
-            var entry = new TileEntry { type = newType, gridPosition = cell };
+            // Portal tiles carry a pair ID so each A/B pair can find each other at runtime
+            int extraData = 0;
+            if (tool == Tool.Portal)
+            {
+                extraData = portalNextPairId;
+                if (portalPlacingA)
+                {
+                    portalPlacingA = false; // next placement is B of this pair
+                }
+                else
+                {
+                    portalPlacingA = true;   // reset to A for the next pair
+                    portalNextPairId++;
+                }
+                Repaint(); // refresh the portal hint label
+            }
+
+            var entry = new TileEntry { type = newType, gridPosition = cell, extraData = extraData };
             if (idx >= 0) list[idx] = entry;
             else          list.Add(entry);
         }
@@ -415,6 +454,10 @@ public class LevelEditorWindow : EditorWindow
         TileType.Destructible   => ToolColor[1],
         TileType.Spike          => ToolColor[2],
         TileType.Goal           => ToolColor[3],
+        TileType.JumpPad        => ToolColor[6],
+        TileType.FallingHazard  => ToolColor[7],
+        TileType.Explosive      => ToolColor[8],
+        TileType.Portal         => ToolColor[9],
         _                       => Color.magenta
     };
 
@@ -424,6 +467,10 @@ public class LevelEditorWindow : EditorWindow
         Tool.Destructible   => TileType.Destructible,
         Tool.Spike          => TileType.Spike,
         Tool.Goal           => TileType.Goal,
+        Tool.JumpPad        => TileType.JumpPad,
+        Tool.FallingHazard  => TileType.FallingHazard,
+        Tool.Explosive      => TileType.Explosive,
+        Tool.Portal         => TileType.Portal,
         _                   => TileType.Indestructible
     };
 

@@ -20,6 +20,9 @@ public abstract class TileElement : MonoBehaviour
     /// <summary>Called when the player's collider physically enters this tile.</summary>
     public virtual void OnPlayerCollide(PlayerController player) { }
 
+    /// <summary>Called when the player's trigger enters this tile (for trigger colliders).</summary>
+    public virtual void OnPlayerTrigger(PlayerController player) { }
+
     /// <summary>Set up visual appearance. Called once from Start().</summary>
     protected virtual void Render() { }
 

@@ -41,10 +41,14 @@ public static class PrefabBuilder
         Sprite sprFaceSmile      = LoadSprite("cubby_face_smile_big");
         Sprite sprPeaceSign      = LoadSprite("cubby_hand_peace");
 
-        CreateSimpleTilePrefab<IndestructibleTile>("IndestructibleTile", sprIndestructible, isTrigger: false, scale: 1f);
-        CreateSimpleTilePrefab<DestructibleTile>  ("DestructibleTile",   sprDestructible,   isTrigger: false, scale: 1f);
-        CreateFacedTilePrefab<SpikeTile>          ("SpikeTile",  sprHazard, sprHazardFace, isTrigger: false, scale: 0.8f);
-        CreateFacedTilePrefab<GoalTile>           ("GoalTile",   sprGoal,   sprGoalFace,   isTrigger: true,  scale: 1f);
+        CreateSimpleTilePrefab<IndestructibleTile> ("IndestructibleTile",  sprIndestructible, isTrigger: false, scale: 1f);
+        CreateSimpleTilePrefab<DestructibleTile>   ("DestructibleTile",    sprDestructible,   isTrigger: false, scale: 1f);
+        CreateFacedTilePrefab<SpikeTile>           ("SpikeTile",   sprHazard, sprHazardFace, isTrigger: false, scale: 0.8f);
+        CreateFacedTilePrefab<GoalTile>            ("GoalTile",    sprGoal,   sprGoalFace,   isTrigger: true,  scale: 1f);
+        CreateSimpleTilePrefab<JumpPadTile>        ("JumpPadTile",        sprDestructible,   isTrigger: false, scale: 1f);
+        CreatePhysicsTilePrefab<FallingHazardTile> ("FallingHazardTile",  sprHazard,         isTrigger: false, scale: 1f);
+        CreateSimpleTilePrefab<ExplosiveTile>      ("ExplosiveTile",      sprDestructible,   isTrigger: false, scale: 1f);
+        CreatePhysicsTilePrefab<PortalTile>        ("PortalTile",         sprGoal,           isTrigger: true,  scale: 1f);
         CreatePlayerPrefab(sprBody, sprFaceHappy, sprFaceShocked, sprFaceSmile, sprPeaceSign);
 
         AssetDatabase.SaveAssets();
@@ -134,6 +138,34 @@ public static class PrefabBuilder
         var faceSR = faceGO.AddComponent<SpriteRenderer>();
         faceSR.sprite       = faceSprite;
         faceSR.sortingOrder = 1;
+
+        PrefabUtility.SaveAsPrefabAsset(go, path, out bool ok);
+        Object.DestroyImmediate(go);
+        if (!ok) Debug.LogError($"[Cubby's Blocks] Failed to save: {path}");
+    }
+
+    // Creates a tile that has its own Rigidbody2D (starts kinematic).
+    // Used for FallingHazardTile and PortalTile which need to fall under gravity.
+    private static void CreatePhysicsTilePrefab<T>(
+        string name, Sprite sprite, bool isTrigger, float scale) where T : TileElement
+    {
+        string path = $"{PrefabDir}/{name}.prefab";
+        var go = new GameObject(name);
+        go.transform.localScale = Vector3.one * scale;
+
+        var sr = go.AddComponent<SpriteRenderer>();
+        sr.sprite = sprite;
+        sr.color  = Color.white;
+
+        var col = go.AddComponent<BoxCollider2D>();
+        col.isTrigger = isTrigger;
+
+        var rb = go.AddComponent<Rigidbody2D>();
+        rb.bodyType       = RigidbodyType2D.Kinematic;
+        rb.gravityScale   = 1f;
+        rb.freezeRotation = true;
+
+        go.AddComponent<T>();
 
         PrefabUtility.SaveAsPrefabAsset(go, path, out bool ok);
         Object.DestroyImmediate(go);
@@ -255,6 +287,10 @@ public static class PrefabBuilder
         AssignPrefab(so, "destructiblePrefab",   $"{PrefabDir}/DestructibleTile.prefab");
         AssignPrefab(so, "spikePrefab",          $"{PrefabDir}/SpikeTile.prefab");
         AssignPrefab(so, "goalPrefab",           $"{PrefabDir}/GoalTile.prefab");
+        AssignPrefab(so, "jumpPadPrefab",        $"{PrefabDir}/JumpPadTile.prefab");
+        AssignPrefab(so, "fallingHazardPrefab",  $"{PrefabDir}/FallingHazardTile.prefab");
+        AssignPrefab(so, "explosivePrefab",      $"{PrefabDir}/ExplosiveTile.prefab");
+        AssignPrefab(so, "portalPrefab",         $"{PrefabDir}/PortalTile.prefab");
         AssignPrefab(so, "playerPrefab",         $"{PrefabDir}/Player.prefab");
 
         if (cam != null)
