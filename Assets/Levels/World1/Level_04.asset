@@ -15,7 +15,51 @@ MonoBehaviour:
   levelNumber: 4
   levelName: Level 4
   worldNumber: 1
-  tiles: []
-  playerSpawnPosition: {x: 0, y: 0}
+  tiles:
+  - type: 0
+    gridPosition: {x: -4, y: -1}
+  - type: 0
+    gridPosition: {x: -3, y: -1}
+  - type: 0
+    gridPosition: {x: -2, y: -1}
+  - type: 0
+    gridPosition: {x: -1, y: -1}
+  - type: 0
+    gridPosition: {x: 0, y: -1}
+  - type: 0
+    gridPosition: {x: 1, y: -1}
+  - type: 0
+    gridPosition: {x: 2, y: -1}
+  - type: 0
+    gridPosition: {x: 3, y: -1}
+  - type: 0
+    gridPosition: {x: 4, y: -1}
+  - type: 1
+    gridPosition: {x: 3, y: 0}
+  - type: 1
+    gridPosition: {x: -3, y: 0}
+  - type: 0
+    gridPosition: {x: 4, y: -2}
+  - type: 0
+    gridPosition: {x: 4, y: -3}
+  - type: 0
+    gridPosition: {x: 5, y: -3}
+  - type: 0
+    gridPosition: {x: 6, y: -3}
+  - type: 0
+    gridPosition: {x: 7, y: -3}
+  - type: 3
+    gridPosition: {x: -7, y: -2}
+  - type: 0
+    gridPosition: {x: -4, y: -2}
+  - type: 0
+    gridPosition: {x: -4, y: -3}
+  - type: 0
+    gridPosition: {x: -5, y: -3}
+  - type: 0
+    gridPosition: {x: -6, y: -3}
+  - type: 0
+    gridPosition: {x: -7, y: -3}
+  playerSpawnPosition: {x: 0, y: 0.5}
   cameraCenter: {x: 0, y: 0}
-  cameraOrthographicSize: 7
+  cameraOrthographicSize: 5

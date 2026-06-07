@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b6e14c7db6086c4b9af42bc5d672f37, type: 3}
+  m_Name: Level_08
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  levelNumber: 8
+  levelName: Level 8
+  worldNumber: 1
+  tiles:
+  - type: 1
+    gridPosition: {x: -3, y: 1}
+  - type: 1
+    gridPosition: {x: -2, y: 1}
+  - type: 1
+    gridPosition: {x: -1, y: 1}
+  - type: 1
+    gridPosition: {x: 0, y: 1}
+  - type: 1
+    gridPosition: {x: 1, y: 1}
+  - type: 1
+    gridPosition: {x: 3, y: 1}
+  - type: 1
+    gridPosition: {x: 2, y: 1}
+  - type: 0
+    gridPosition: {x: -4, y: -3}
+  - type: 0
+    gridPosition: {x: -3, y: -3}
+  - type: 0
+    gridPosition: {x: -2, y: -3}
+  - type: 0
+    gridPosition: {x: -1, y: -3}
+  - type: 0
+    gridPosition: {x: 0, y: -3}
+  - type: 0
+    gridPosition: {x: 1, y: -3}
+  - type: 0
+    gridPosition: {x: 2, y: -3}
+  - type: 0
+    gridPosition: {x: 3, y: -3}
+  - type: 0
+    gridPosition: {x: 4, y: -3}
+  - type: 0
+    gridPosition: {x: -4, y: -2}
+  - type: 0
+    gridPosition: {x: 4, y: -2}
+  - type: 3
+    gridPosition: {x: 0, y: -2}
+  - type: 1
+    gridPosition: {x: -4, y: 1}
+  - type: 1
+    gridPosition: {x: 4, y: 1}
+  - type: 2
+    gridPosition: {x: 4, y: 2}
+  - type: 2
+    gridPosition: {x: -4, y: 2}
+  playerSpawnPosition: {x: 0, y: 2.5}
+  cameraCenter: {x: 0, y: 0}
+  cameraOrthographicSize: 5

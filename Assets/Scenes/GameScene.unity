@@ -1652,7 +1652,7 @@ Material:
     - _Reflectivity: 10
     - _ScaleRatioA: 0.8333333
     - _ScaleRatioB: 0.6770833
-    - _ScaleRatioC: 0.6770833
+    - _ScaleRatioC: 0.6155303
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
@@ -13615,11 +13615,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   levels:
-  - {fileID: 11400000, guid: 71a7e036e713f3e46aa212366c6cc2ea, type: 2}
-  - {fileID: 11400000, guid: 072c1e6888f63944f9c6ae0b07d82e15, type: 2}
-  - {fileID: 11400000, guid: b699134308b54d744a56024c6711b7e2, type: 2}
-  - {fileID: 11400000, guid: 1c1adaea997b05844b32ee715a3d2667, type: 2}
-  - {fileID: 11400000, guid: 20a87efa3b03cf5418a13659b0d20c01, type: 2}
+  - {fileID: 11400000, guid: 9a8ecfc8c7ed6014caa204ee74e9ba06, type: 2}
+  - {fileID: 11400000, guid: 1b1b7622691f62a4988c6bc86dc7d56d, type: 2}
+  - {fileID: 11400000, guid: e687a039e6b2af142aa0722fd0923e35, type: 2}
+  - {fileID: 11400000, guid: 919b75413a52ab24aa86146d369ffbae, type: 2}
+  - {fileID: 11400000, guid: 16845676c51c96b4d84eedb7d48a3d64, type: 2}
+  - {fileID: 11400000, guid: 80c5609c75831f246ae486e22c2e4986, type: 2}
+  - {fileID: 11400000, guid: 8a245fe586a2a5b4ea4ffbb8de807550, type: 2}
+  - {fileID: 11400000, guid: d073526841df65242a0c7d3390528a12, type: 2}
+  - {fileID: 11400000, guid: 192e5ce0df53a124fba6eddde69812db, type: 2}
+  - {fileID: 11400000, guid: ef0d84e7b04be574f9a1eacadc1010e1, type: 2}
+  - {fileID: 11400000, guid: 285998acf3db3f842afb80509233e24e, type: 2}
+  - {fileID: 11400000, guid: 70800f9e05487c5459bf8328627d546c, type: 2}
+  - {fileID: 11400000, guid: 8e9776a1529981e4ebff0b716d7c4d58, type: 2}
+  - {fileID: 11400000, guid: b361926c66c675d47b4ed4b488368cc0, type: 2}
+  - {fileID: 11400000, guid: 5468de978de55d84aa55e76513eb6117, type: 2}
+  - {fileID: 11400000, guid: 7f0b59c8250a4734d9f49deb0dbe0a57, type: 2}
+  - {fileID: 11400000, guid: 93831f8bfd2c3d94eaa3ff55447c761c, type: 2}
+  - {fileID: 11400000, guid: 4998e5a4f5a1cb347a782eace0adba86, type: 2}
+  - {fileID: 11400000, guid: 4467e4abf651b2d44a923085c431cb06, type: 2}
+  - {fileID: 11400000, guid: 8712a8de7e49374479600e6d4978e5eb, type: 2}
 --- !u!4 &2016529878
 Transform:
   m_ObjectHideFlags: 0
