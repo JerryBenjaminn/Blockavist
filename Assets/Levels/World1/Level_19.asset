@@ -24,6 +24,26 @@ MonoBehaviour:
     gridPosition: {x: 0, y: -3}
   - type: 3
     gridPosition: {x: 0, y: -4}
+  - type: 1
+    gridPosition: {x: 2, y: 0}
+  - type: 1
+    gridPosition: {x: 2, y: -1}
+  - type: 1
+    gridPosition: {x: 3, y: -3}
+  - type: 1
+    gridPosition: {x: 2, y: -4}
+  - type: 1
+    gridPosition: {x: 4, y: -2}
+  - type: 1
+    gridPosition: {x: -2, y: -4}
+  - type: 1
+    gridPosition: {x: -3, y: -3}
+  - type: 1
+    gridPosition: {x: -2, y: -1}
+  - type: 1
+    gridPosition: {x: -2, y: 0}
+  - type: 1
+    gridPosition: {x: -4, y: -2}
   playerSpawnPosition: {x: 0, y: 3.5}
   cameraCenter: {x: 0, y: 0}
   cameraOrthographicSize: 5

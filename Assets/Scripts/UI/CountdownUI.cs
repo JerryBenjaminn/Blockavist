@@ -20,6 +20,8 @@ public class CountdownUI : MonoBehaviour
 
     private IEnumerator Sequence()
     {
+        GameManager.Instance?.BeginCountdown();
+
         // Freeze player immediately (player may still be falling to floor — gravity stays active)
         var player = LevelManager.Instance?.ActivePlayer;
         player?.Freeze();
@@ -39,6 +41,8 @@ public class CountdownUI : MonoBehaviour
         LevelManager.Instance?.ActivePlayer?.Unfreeze();
 
         if (countdownText != null) countdownText.text = string.Empty;
+
+        GameManager.Instance?.EndCountdown();
 
         // Fire before SetActive(false): disabling the GO stops the coroutine immediately,
         // so any code after SetActive(false) is never reached.

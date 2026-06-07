@@ -4,8 +4,8 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
-    private const string KeyMusic = "musicEnabled";
-    private const string KeySFX   = "sfxEnabled";
+    private const string KeyMusic = "MusicEnabled";
+    private const string KeySFX   = "SFXEnabled";
 
     public bool MusicEnabled { get; private set; }
     public bool SFXEnabled   { get; private set; }
@@ -34,16 +34,15 @@ public class AudioManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Auto-create AudioSources if not wired in the inspector
         if (musicSource == null)
         {
-            musicSource = gameObject.AddComponent<AudioSource>();
-            musicSource.loop         = true;
-            musicSource.playOnAwake  = false;
+            musicSource             = gameObject.AddComponent<AudioSource>();
+            musicSource.loop        = true;
+            musicSource.playOnAwake = false;
         }
         if (sfxSource == null)
         {
-            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource             = gameObject.AddComponent<AudioSource>();
             sfxSource.loop        = false;
             sfxSource.playOnAwake = false;
         }
@@ -54,51 +53,52 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        StartMusic();
-    }
+        if (musicSource != null) musicSource.mute = !MusicEnabled;
+        if (sfxSource   != null) sfxSource.mute   = !SFXEnabled;
 
-    private void StartMusic()
-    {
-        if (musicSource == null || musicClip == null) return;
-        musicSource.clip = musicClip;
-        musicSource.loop = true;
-        musicSource.mute = !MusicEnabled;
-        if (!musicSource.isPlaying)
+        if (MusicEnabled && musicSource != null && musicClip != null)
+        {
+            musicSource.clip = musicClip;
+            musicSource.loop = true;
             musicSource.Play();
+        }
     }
 
     // ── Toggle API (called from SettingsUI) ───────────────────────────────────
 
-    public void SetMusic(bool on)
+    public void SetMusicEnabled(bool on)
     {
         MusicEnabled = on;
+        if (musicSource != null)
+        {
+            musicSource.mute = !on;
+            if (on && musicClip != null && !musicSource.isPlaying)
+            {
+                if (musicSource.clip == null) musicSource.clip = musicClip;
+                musicSource.Play();
+            }
+        }
         PlayerPrefs.SetInt(KeyMusic, on ? 1 : 0);
         PlayerPrefs.Save();
-        if (musicSource != null) musicSource.mute = !on;
     }
 
-    public void SetSFX(bool on)
+    public void SetSFXEnabled(bool on)
     {
         SFXEnabled = on;
+        if (sfxSource != null) sfxSource.mute = !on;
         PlayerPrefs.SetInt(KeySFX, on ? 1 : 0);
         PlayerPrefs.Save();
     }
 
     // ── SFX playback ──────────────────────────────────────────────────────────
 
-    /// <summary>Play any clip through the shared SFX source. Respects the SFX toggle.</summary>
     public void PlaySFX(AudioClip clip)
     {
         if (!SFXEnabled || sfxSource == null || clip == null) return;
         sfxSource.PlayOneShot(clip);
     }
 
-    public void PlayButtonClick()
-    {
-        if (buttonClickClip == null)
-            Debug.LogWarning("[AudioManager] buttonClickClip is not assigned — assign it in the AudioManager inspector.");
-        PlaySFX(buttonClickClip);
-    }
+    public void PlayButtonClick() => PlaySFX(buttonClickClip);
     public void PlayLevelSelect() => PlaySFX(levelSelectClip);
     public void PlayCubbyDie()    => PlaySFX(cubbyDieClip);
     public void PlayCubbyGoal()   => PlaySFX(cubbyGoalClip);

@@ -3,6 +3,7 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEngine;
+
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
@@ -134,9 +135,15 @@ public static class UIBuilder
         var lsGO          = FindOrCreate(rootT, "LevelSelectScreen",  () => BuildLevelSelect(rootT));
         RewireLevelSelectButtons(lsGO); // always refreshed — repairs lost refs on existing screens
         var gameHUD       = FindOrCreate(rootT, "GameHUD",            () => BuildGameHUD(rootT, uiManagerComp));
-        var settingsGO    = FindOrCreate(rootT, "SettingsPanel",      () => BuildSettingsPanel(rootT));
+        // SettingsPanel — force-rebuild to remove ToggleSpriteSwapper components and
+        // old persistent listener wiring. Runtime listeners are added in SettingsUI.Awake.
+        { var s = rootT.Find("SettingsPanel"); if (s != null) Object.DestroyImmediate(s.gameObject); }
+        var settingsGO    = BuildSettingsPanel(rootT);
         var pauseGO       = FindOrCreate(rootT, "PausePanel",         () => BuildPausePanel(rootT));
-        var countdownGO   = FindOrCreate(rootT, "CountdownPanel",     () => BuildCountdownPanel(rootT));
+        // CountdownPanel is stateless (text only, no button listeners) — always rebuild
+        // so that text size, word-wrap, and outline fixes are applied to existing scenes.
+        { var cd = rootT.Find("CountdownPanel"); if (cd != null) Object.DestroyImmediate(cd.gameObject); }
+        var countdownGO   = BuildCountdownPanel(rootT);
         var lvlCompleteGO = FindOrCreate(rootT, "LevelCompletePanel", () => BuildLevelCompletePanel(rootT));
         var gameOverGO    = FindOrCreate(rootT, "GameOverPanel",      () => BuildGameOverPanel(rootT));
         var tutorialGO    = FindOrCreate(rootT, "TutorialPanel",      () => BuildTutorialPanel(rootT));
@@ -318,24 +325,24 @@ public static class UIBuilder
         Anchored(musicLabel.rectTransform, new Vector2(0.28f, 0.66f), new Vector2(260, 44));
 
         var musicToggle = CreateToggle(card, new Vector2(0.72f, 0.66f));
-        UnityEventTools.AddBoolPersistentListener(musicToggle.onValueChanged, ui.OnMusicToggled, true);
 
         // SFX row
         var sfxLabel    = TMP(card, "Sound Effects", 26, CardText);
         Anchored(sfxLabel.rectTransform, new Vector2(0.28f, 0.50f), new Vector2(260, 44));
 
         var sfxToggle   = CreateToggle(card, new Vector2(0.72f, 0.50f));
-        UnityEventTools.AddBoolPersistentListener(sfxToggle.onValueChanged, ui.OnSFXToggled, true);
 
         // Close — destructive action
         var closeBtn = Btn(card, "X  Close", new Vector2(0.5f, 0.16f),
                            new Vector2(280, 80), AccentRed, White, 24, _sprBtnRed);
         UnityEventTools.AddPersistentListener(closeBtn.onClick, ui.OnCloseClicked);
 
-        // Wire toggles
+        // Runtime toggle listeners are wired in SettingsUI.Awake — no persistent wiring needed here
         var soUI = new SerializedObject(ui);
-        SetObjRef(soUI, "musicToggle", musicToggle);
-        SetObjRef(soUI, "sfxToggle",   sfxToggle);
+        SetObjRef(soUI, "musicToggle",    musicToggle);
+        SetObjRef(soUI, "sfxToggle",      sfxToggle);
+        SetObjRef(soUI, "toggleOnSprite", _sprCheckGreen);
+        SetObjRef(soUI, "toggleOffSprite", _sprCheckRed);
         soUI.ApplyModifiedProperties();
 
         return root;
@@ -549,8 +556,12 @@ public static class UIBuilder
         var ui   = root.AddComponent<CountdownUI>();
 
         var numTmp = TMP(root.transform, "3", 220, White);
-        numTmp.fontStyle = FontStyles.Bold;
-        Anchored(numTmp.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(400, 300));
+        numTmp.fontStyle          = FontStyles.Bold;
+        numTmp.enableWordWrapping = false;
+        numTmp.outlineColor       = Color.black;
+        numTmp.outlineWidth       = 0.25f;
+        // Width 600 gives "GO!" comfortable room at font size 220; height 300 fits the digit
+        Anchored(numTmp.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(600, 300));
 
         var soUI = new SerializedObject(ui);
         SetObjRef(soUI, "countdownText", numTmp);
@@ -820,7 +831,7 @@ public static class UIBuilder
         return btn;
     }
 
-    // Toggle using check_square sprites + ToggleSpriteSwapper
+    // Toggle using check_square sprites. Sprite swapping is handled by SettingsUI directly.
     static Toggle CreateToggle(Transform parent, Vector2 anchorPos)
     {
         var go  = new GameObject("Toggle");
@@ -840,14 +851,6 @@ public static class UIBuilder
         toggle.graphic       = null;
         toggle.transition    = Selectable.Transition.None;
         toggle.isOn          = true;
-
-        // ToggleSpriteSwapper reacts to onValueChanged and swaps the sprite
-        var swapper = go.AddComponent<ToggleSpriteSwapper>();
-        var soSwap  = new SerializedObject(swapper);
-        soSwap.FindProperty("onSprite") .objectReferenceValue = _sprCheckGreen;
-        soSwap.FindProperty("offSprite").objectReferenceValue = _sprCheckRed;
-        soSwap.FindProperty("image")    .objectReferenceValue = img;
-        soSwap.ApplyModifiedProperties();
 
         return toggle;
     }

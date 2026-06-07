@@ -27,10 +27,19 @@ public class GameManager : MonoBehaviour
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
+    // ── Countdown gate ────────────────────────────────────────────────────────
+
+    public bool IsCountingDown { get; private set; }
+    public void BeginCountdown() => IsCountingDown = true;
+    public void EndCountdown()   => IsCountingDown = false;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        Screen.orientation = ScreenOrientation.LandscapeLeft;
     }
 
     private void Start()

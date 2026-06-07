@@ -35,7 +35,7 @@ public class InputHandler : MonoBehaviour
         // on-screen buttons; the old tap-anywhere fallback was removed to prevent
         // double-invocation of RestartLevel()/LoadNextLevel().
         var gm = GameManager.Instance;
-        if (gm == null || gm.CurrentState != GameManager.GameState.Playing) return;
+        if (gm == null || gm.CurrentState != GameManager.GameState.Playing || gm.IsCountingDown) return;
 
         // Multi-touch (mobile)
         foreach (var touch in Touch.activeTouches)

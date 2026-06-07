@@ -1,4 +1,4 @@
-# CLAUDE.md — Cubby's Blocks
+# CLAUDE.md — Blockavist
 
 ## Project Overview
 
@@ -16,7 +16,7 @@
 
 
 
-Cubby's Blocks is a mobile puzzle game for Android. The player guides a character that moves automatically through levels. The player's task is to tap/destroy elements in the level with their finger so the character can reach the goal. The game will be released on Google Play Store as a free app monetized with ads.
+Blockavist is a mobile puzzle game for Android. The player guides a character that moves automatically through levels. The player's task is to tap/destroy elements in the level with their finger so the character can reach the goal. The game will be released on Google Play Store as a free app monetized with ads.
 
 **Engine:** Unity 6000.3.11f1 LTS  
 **Target Platform:** Android (Google Play)  
@@ -93,12 +93,12 @@ Adding a new element type = new class extending `TileElement`. Zero changes to e
 | **Spikes** | Static hazard | Player dies on contact |
 | **Goal** | Level completion point | Player reaches → victory |
 
-### Post-MVP Elements (future updates)
-- Launch pad (bounces player upward)
-- Moving hazard
-- Locked tile (requires key)
-- Slippery surface
-- Bounce pad / trampoline
+### Post-MVP Elements (v1.1 update)
+- Launch pad (bounces player upward — can be used as hazard or progression tool)
+- Falling hazard tiles (destroy block underneath red hazard tile → it falls)
+- More levels (World 3+)
+- Star rating system per level
+- Moving hazards
 
 ---
 
@@ -192,9 +192,9 @@ New world = new folder of ScriptableObject assets + new world node in UI. No arc
 - [x] ProgressManager (PlayerPrefs)
 - [x] AudioManager (music/sfx toggles)
 
-### Phase 4 — Content
-- [ ] All 20 levels designed and implemented
-- [ ] Difficulty curve testing
+### Phase 4 — Content ✅
+- [x] All 20 levels designed and implemented
+- [x] Difficulty curve testing
 
 ### Phase 5 — Monetization ✅
 - [x] AdMob integration (interstitial every 3rd level)
