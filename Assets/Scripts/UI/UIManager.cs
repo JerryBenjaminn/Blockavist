@@ -32,6 +32,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameOverUI      gameOverPanel;
     [SerializeField] private CountdownUI     countdownPanel;
     [SerializeField] private TutorialUI      tutorialPanel;
+    [SerializeField] private HintUI          hintPanel;
 
     // ── Fade ──────────────────────────────────────────────────────────────────
     [Header("Fade")]
@@ -39,6 +40,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float       fadeDuration = 0.35f;
 
     // ── State ─────────────────────────────────────────────────────────────────
+    public bool IsPauseOpen { get; private set; }
+    public bool IsHintOpen  { get; private set; }
+
     private GameObject[] allScreens;
     private Coroutine    _activeNav;   // only one navigation coroutine at a time
 
@@ -124,6 +128,7 @@ public class UIManager : MonoBehaviour
     public void ShowPause()
     {
         if (pausePanel == null) return;
+        IsPauseOpen = true;
         pausePanel.gameObject.SetActive(true);
         BackgroundManager.Instance?.SetVisible(false);
         LevelManager.Instance?.ActivePlayer?.Freeze();
@@ -132,6 +137,7 @@ public class UIManager : MonoBehaviour
     public void HidePause()
     {
         if (pausePanel == null) return;
+        IsPauseOpen = false;
         pausePanel.gameObject.SetActive(false);
         LevelManager.Instance?.ActivePlayer?.Unfreeze();
         // Only restore clouds if the player is still mid-game (not headed to a menu)
@@ -151,6 +157,22 @@ public class UIManager : MonoBehaviour
         BackgroundManager.Instance?.SetVisible(false);
     }
 
+    public void ShowHint()
+    {
+        if (hintPanel == null) return;
+        IsHintOpen = true;
+        hintPanel.gameObject.SetActive(true);
+        LevelManager.Instance?.ActivePlayer?.Freeze();
+    }
+
+    public void HideHint()
+    {
+        if (hintPanel == null) return;
+        IsHintOpen = false;
+        hintPanel.gameObject.SetActive(false);
+        LevelManager.Instance?.ActivePlayer?.Unfreeze();
+    }
+
     public void HideAllOverlays()
     {
         settingsPanel      ?.gameObject.SetActive(false);
@@ -159,6 +181,9 @@ public class UIManager : MonoBehaviour
         gameOverPanel      ?.gameObject.SetActive(false);
         countdownPanel     ?.gameObject.SetActive(false);
         tutorialPanel      ?.gameObject.SetActive(false);
+        hintPanel          ?.gameObject.SetActive(false);
+        IsPauseOpen = false;
+        IsHintOpen  = false;
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────

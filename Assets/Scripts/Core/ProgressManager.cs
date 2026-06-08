@@ -21,9 +21,11 @@ public class ProgressManager : MonoBehaviour
 
     public bool IsLevelUnlocked(int levelNumber) => levelNumber <= UnlockedLevel;
 
-    /// <summary>World 1 always unlocked; World 2 requires Level 10 completed.</summary>
+    /// <summary>World 1 always unlocked; World 2 requires Level 10 completed; World 3 requires Level 20 completed.</summary>
     public bool IsWorldUnlocked(int worldNumber) =>
-        worldNumber == 1 || UnlockedLevel > 10;
+        worldNumber == 1 ||
+        (worldNumber == 2 && UnlockedLevel > 10) ||
+        (worldNumber == 3 && UnlockedLevel > 20);
 
     public void UnlockNextLevel(int completedLevelNumber)
     {

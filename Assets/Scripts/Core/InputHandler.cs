@@ -65,6 +65,11 @@ public class InputHandler : MonoBehaviour
 
     private void HandleTap(Vector2 screenPosition)
     {
+        // Overlay open — block tile destruction only; UI buttons are unaffected
+        // because they are handled by Unity's EventSystem, not by this raycast.
+        var ui = UIManager.Instance;
+        if (ui != null && (ui.IsPauseOpen || ui.IsHintOpen)) return;
+
         Vector2 worldPos = mainCamera.ScreenToWorldPoint(screenPosition);
         RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
         if (hit.collider == null) return;

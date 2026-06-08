@@ -13,39 +13,54 @@ MonoBehaviour:
   m_Name: Level_02
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   levelNumber: 2
-  levelName: Level 2
+  levelName: Two taps
   worldNumber: 1
   tiles:
   - type: 0
     gridPosition: {x: 0, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 1, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 2, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 3, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 4, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: -1, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: -2, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: -3, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: -4, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: -5, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: -6, y: -1}
+    extraData: 0
   - type: 1
     gridPosition: {x: 2, y: 0}
+    extraData: 0
   - type: 1
     gridPosition: {x: -2, y: 0}
+    extraData: 0
   - type: 3
     gridPosition: {x: 5, y: 0}
+    extraData: 0
   - type: 0
     gridPosition: {x: 5, y: -1}
+    extraData: 0
   playerSpawnPosition: {x: -6, y: 0.5}
   cameraCenter: {x: 0, y: 0}
   cameraOrthographicSize: 5

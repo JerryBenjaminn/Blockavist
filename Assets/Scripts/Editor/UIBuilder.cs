@@ -42,6 +42,11 @@ public static class UIBuilder
     private static readonly Color White         = Color.white;
     private static readonly Color DimOverlay    = new Color(0f, 0f, 0f, 0.60f);
 
+    // World-card theme colours
+    private static readonly Color World1Green  = new Color(0.298f, 0.686f, 0.314f);  // #4CAF50 Grasslands
+    private static readonly Color World2Purple = new Color(0.365f, 0.306f, 0.459f);  // #5D4E75 Stone Dungeon
+    private static readonly Color World3Orange = new Color(0.753f, 0.267f, 0.102f);  // #C0441A Volcano
+
     // Sprite assets — loaded once per Build UI run
     private static Sprite _sprBtnGreen;
     private static Sprite _sprBtnBlue;
@@ -131,15 +136,21 @@ public static class UIBuilder
         // listeners intact.  Only absent screens are built from scratch.
         var loadingGO     = FindOrCreate(rootT, "LoadingScreen",      () => BuildLoadingScreen(rootT));
         var mainMenuGO    = FindOrCreate(rootT, "MainMenuScreen",     () => BuildMainMenu(rootT));
-        var wsGO          = FindOrCreate(rootT, "WorldSelectScreen",  () => BuildWorldSelect(rootT));
+        // WorldSelectScreen — always rebuilt so world-card changes take effect on re-run
+        { var ws = rootT.Find("WorldSelectScreen"); if (ws != null) Object.DestroyImmediate(ws.gameObject); }
+        var wsGO          = BuildWorldSelect(rootT);
         var lsGO          = FindOrCreate(rootT, "LevelSelectScreen",  () => BuildLevelSelect(rootT));
         RewireLevelSelectButtons(lsGO); // always refreshed — repairs lost refs on existing screens
-        var gameHUD       = FindOrCreate(rootT, "GameHUD",            () => BuildGameHUD(rootT, uiManagerComp));
+        // GameHUD — force-rebuild so HUD button changes (pause, hint) are always applied
+        { var g = rootT.Find("GameHUD"); if (g != null) Object.DestroyImmediate(g.gameObject); }
+        var gameHUD       = BuildGameHUD(rootT, uiManagerComp);
         // SettingsPanel — force-rebuild to remove ToggleSpriteSwapper components and
         // old persistent listener wiring. Runtime listeners are added in SettingsUI.Awake.
         { var s = rootT.Find("SettingsPanel"); if (s != null) Object.DestroyImmediate(s.gameObject); }
         var settingsGO    = BuildSettingsPanel(rootT);
-        var pauseGO       = FindOrCreate(rootT, "PausePanel",         () => BuildPausePanel(rootT));
+        // PausePanel — force-rebuild so button listeners are always correctly wired
+        { var p = rootT.Find("PausePanel"); if (p != null) Object.DestroyImmediate(p.gameObject); }
+        var pauseGO       = BuildPausePanel(rootT);
         // CountdownPanel is stateless (text only, no button listeners) — always rebuild
         // so that text size, word-wrap, and outline fixes are applied to existing scenes.
         { var cd = rootT.Find("CountdownPanel"); if (cd != null) Object.DestroyImmediate(cd.gameObject); }
@@ -147,6 +158,9 @@ public static class UIBuilder
         var lvlCompleteGO = FindOrCreate(rootT, "LevelCompletePanel", () => BuildLevelCompletePanel(rootT));
         var gameOverGO    = FindOrCreate(rootT, "GameOverPanel",      () => BuildGameOverPanel(rootT));
         var tutorialGO    = FindOrCreate(rootT, "TutorialPanel",      () => BuildTutorialPanel(rootT));
+        // HintPanel — force-rebuild so tile list changes take effect on re-run
+        { var h = rootT.Find("HintPanel"); if (h != null) Object.DestroyImmediate(h.gameObject); }
+        var hintGO        = BuildHintPanel(rootT, uiManagerComp);
 
         // ── Audio — ButtonSFX on every standard button ────────────────────────
         // Skips LevelButtonUI buttons; those play level_select SFX in OnClicked().
@@ -164,6 +178,7 @@ public static class UIBuilder
         lvlCompleteGO.SetActive(false);
         gameOverGO   .SetActive(false);
         tutorialGO   .SetActive(false);
+        hintGO       .SetActive(false);
 
         // ── UIManager wiring (always refreshed) ───────────────────────────────
         var so = new SerializedObject(uiManagerComp);
@@ -178,6 +193,7 @@ public static class UIBuilder
         SetObjRef(so, "gameOverPanel",      gameOverGO   .GetComponent<GameOverUI>());
         SetObjRef(so, "countdownPanel",     countdownGO  .GetComponent<CountdownUI>());
         SetObjRef(so, "tutorialPanel",      tutorialGO   .GetComponent<TutorialUI>());
+        SetObjRef(so, "hintPanel",          hintGO       .GetComponent<HintUI>());
         SetObjRef(so, "fadeOverlay",        fadeCG);
         so.ApplyModifiedProperties();
         EditorUtility.SetDirty(uiManagerGO);
@@ -359,46 +375,59 @@ public static class UIBuilder
         TMP(root.transform, "Select World", 34, White)
             .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.88f), new Vector2(800, 52)));
 
-        // World 1 card
-        var w1Card = PanelAnchored(root.transform, "World1Card", new Vector2(0.5f, 0.63f),
-                                   new Vector2(800, 160), AccentBlue);
-        TMP(w1Card, "World 1  -  Basic Blocks", 26, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.62f), new Vector2(700, 44)));
-        TMP(w1Card, "Levels 1 - 10", 22, new Color(0.85f, 0.95f, 1f))
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.28f), new Vector2(700, 36)));
+        // Three cards share the same width and height; only vertical anchor differs.
+        // Anchors: 0.72 / 0.50 / 0.28 — equal spacing with room for title and back button.
+        const float CardW = 800f;
+        const float CardH = 150f;
+
+        // ── World 1 — Grasslands ─────────────────────────────────────────────
+        var w1Card = PanelAnchored(root.transform, "World1Card",
+                                   new Vector2(0.5f, 0.72f), new Vector2(CardW, CardH), World1Green);
+        TMP(w1Card, "World 1  -  Grasslands", 26, White)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.64f), new Vector2(700, 42)));
+        TMP(w1Card, "Levels 1 - 10", 22, new Color(0.80f, 1.00f, 0.82f))
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.26f), new Vector2(700, 34)));
         var w1Btn = w1Card.gameObject.AddComponent<Button>();
         UnityEventTools.AddPersistentListener(w1Btn.onClick, ui.OnWorld1Clicked);
-        if (w1Card.gameObject.GetComponent<Image>() == null)
-            w1Card.gameObject.AddComponent<Image>().color = AccentBlue;
 
-        // World 2 card
-        var w2Card = PanelAnchored(root.transform, "World2Card", new Vector2(0.5f, 0.40f),
-                                   new Vector2(800, 160), new Color(0.30f, 0.30f, 0.42f));
-        TMP(w2Card, "World 2  -  ???", 26, White)
-            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.62f), new Vector2(700, 44)));
-        var w2Sub = TMP(w2Card, "Complete World 1 to unlock", 22, new Color(0.7f, 0.7f, 0.85f));
-        Anchored(w2Sub.rectTransform, new Vector2(0.5f, 0.28f), new Vector2(700, 36));
-
-        // Padlock label (text-based)
-        var lockTxt = TMP(w2Card, "[locked]", 22, new Color(0.9f, 0.8f, 0.2f));
-        Anchored(lockTxt.rectTransform, new Vector2(0.88f, 0.55f), new Vector2(120, 36));
-
+        // ── World 2 — Stone Dungeon ──────────────────────────────────────────
+        var w2Card = PanelAnchored(root.transform, "World2Card",
+                                   new Vector2(0.5f, 0.50f), new Vector2(CardW, CardH), World2Purple);
+        TMP(w2Card, "World 2  -  Stone Dungeon", 26, White)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.64f), new Vector2(700, 42)));
+        var w2Sub = TMP(w2Card, "Complete World 1 to unlock", 22, new Color(0.85f, 0.80f, 1.00f));
+        Anchored(w2Sub.rectTransform, new Vector2(0.5f, 0.26f), new Vector2(700, 34));
+        var w2Lock = TMP(w2Card, "[locked]", 22, AccentYellow);
+        Anchored(w2Lock.rectTransform, new Vector2(0.88f, 0.52f), new Vector2(120, 34));
         var w2Btn = w2Card.gameObject.AddComponent<Button>();
         UnityEventTools.AddPersistentListener(w2Btn.onClick, ui.OnWorld2Clicked);
-        if (w2Card.gameObject.GetComponent<Image>() == null)
-            w2Card.gameObject.AddComponent<Image>().color = new Color(0.30f, 0.30f, 0.42f);
+
+        // ── World 3 — Volcano ────────────────────────────────────────────────
+        var w3Card = PanelAnchored(root.transform, "World3Card",
+                                   new Vector2(0.5f, 0.28f), new Vector2(CardW, CardH), World3Orange);
+        TMP(w3Card, "World 3  -  Volcano", 26, White)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.64f), new Vector2(700, 42)));
+        var w3Sub = TMP(w3Card, "Complete World 2 to unlock", 22, new Color(1.00f, 0.82f, 0.72f));
+        Anchored(w3Sub.rectTransform, new Vector2(0.5f, 0.26f), new Vector2(700, 34));
+        var w3Lock = TMP(w3Card, "[locked]", 22, AccentYellow);
+        Anchored(w3Lock.rectTransform, new Vector2(0.88f, 0.52f), new Vector2(120, 34));
+        var w3Btn = w3Card.gameObject.AddComponent<Button>();
+        UnityEventTools.AddPersistentListener(w3Btn.onClick, ui.OnWorld3Clicked);
 
         // Back — secondary
         var backBtn = Btn(root.transform, "Back", new Vector2(0.10f, 0.92f),
                           new Vector2(240, 80), CardBg, White, 24, _sprBtnBlue);
         UnityEventTools.AddPersistentListener(backBtn.onClick, ui.OnBackClicked);
 
-        // Wire references
+        // Wire all references into WorldSelectUI
         var soUI = new SerializedObject(ui);
         SetObjRef(soUI, "world1Button",   w1Btn);
         SetObjRef(soUI, "world2Button",   w2Btn);
-        SetObjRef(soUI, "world2LockIcon", lockTxt.gameObject);
+        SetObjRef(soUI, "world2LockIcon", w2Lock.gameObject);
         SetObjRef(soUI, "world2SubText",  w2Sub);
+        SetObjRef(soUI, "world3Button",   w3Btn);
+        SetObjRef(soUI, "world3LockIcon", w3Lock.gameObject);
+        SetObjRef(soUI, "world3SubText",  w3Sub);
         soUI.ApplyModifiedProperties();
 
         return root;
@@ -518,6 +547,11 @@ public static class UIBuilder
         var pauseBtn = Btn(root.transform, "II", new Vector2(0.06f, 0.92f),
                            new Vector2(90, 90), new Color(0.2f, 0.2f, 0.3f, 0.85f), White, 44);
         UnityEventTools.AddPersistentListener(pauseBtn.onClick, uiManager.ShowPause);
+
+        // Hint button — top-right corner, opposite pause
+        var hintBtn = Btn(root.transform, "?", new Vector2(0.94f, 0.92f),
+                          new Vector2(90, 90), new Color(0.2f, 0.2f, 0.3f, 0.85f), White, 44);
+        UnityEventTools.AddPersistentListener(hintBtn.onClick, uiManager.ShowHint);
 
         return root;
     }
@@ -677,6 +711,144 @@ public static class UIBuilder
         soUI.ApplyModifiedProperties();
 
         return root;
+    }
+
+    // ── Hint Panel (overlay) ──────────────────────────────────────────────────
+    static GameObject BuildHintPanel(Transform parent, UIManager uiManager)
+    {
+        var root = PanelFull(parent, "HintPanel", DimOverlay).gameObject;
+        var ui   = root.AddComponent<HintUI>();
+
+        var card = PanelAnchored(root.transform, "Card", Vector2.one * 0.5f,
+                                 new Vector2(760, 620), CardBg);
+
+        TMP(card, "Tile Reference", 28, CardText)
+            .rectTransform.Do(rt => Anchored(rt, new Vector2(0.5f, 0.94f), new Vector2(680, 44)));
+
+        // ── Scroll view ───────────────────────────────────────────────────────
+        var scrollGO  = new GameObject("ScrollView");
+        scrollGO.transform.SetParent(card, false);
+        var scrollImg = scrollGO.AddComponent<Image>();
+        scrollImg.color = Color.clear;
+        var scrollRT  = scrollGO.GetComponent<RectTransform>();
+        scrollRT.anchorMin = new Vector2(0.03f, 0.14f);
+        scrollRT.anchorMax = new Vector2(0.97f, 0.88f);
+        scrollRT.offsetMin = scrollRT.offsetMax = Vector2.zero;
+        var scrollRect = scrollGO.AddComponent<ScrollRect>();
+        scrollRect.horizontal        = false;
+        scrollRect.vertical          = true;
+        scrollRect.scrollSensitivity = 30f;
+        scrollRect.movementType      = ScrollRect.MovementType.Clamped;
+
+        // Viewport — RectMask2D clips by rect bounds without needing an opaque Image
+        var vpGO = new GameObject("Viewport");
+        vpGO.transform.SetParent(scrollGO.transform, false);
+        var vpRT = vpGO.AddComponent<RectTransform>();
+        vpRT.anchorMin = Vector2.zero;
+        vpRT.anchorMax = Vector2.one;
+        vpRT.offsetMin = vpRT.offsetMax = Vector2.zero;
+        vpGO.AddComponent<RectMask2D>();
+
+        // Content — anchored to top of viewport, height driven by ContentSizeFitter
+        var contentGO = new GameObject("Content");
+        contentGO.transform.SetParent(vpGO.transform, false);
+        var contentRT = contentGO.AddComponent<RectTransform>();
+        contentRT.anchorMin = new Vector2(0f, 1f);
+        contentRT.anchorMax = new Vector2(1f, 1f);
+        contentRT.pivot     = new Vector2(0.5f, 1f);
+        contentRT.sizeDelta = Vector2.zero;
+        var vlg = contentGO.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing                = 4f;
+        vlg.padding                = new RectOffset(6, 6, 4, 4);
+        vlg.childAlignment         = TextAnchor.UpperLeft;
+        vlg.childControlWidth      = true;
+        vlg.childControlHeight     = false;
+        vlg.childForceExpandWidth  = true;
+        vlg.childForceExpandHeight = false;
+        var csf = contentGO.AddComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        scrollRect.viewport = vpRT;
+        scrollRect.content  = contentRT;
+
+        // Tile entries
+        var entries = new (Color color, string name, string desc)[]
+        {
+            (AccentYellow,                     "Destructible",  "Tap to destroy"),
+            (new Color(0.55f, 0.55f, 0.60f),  "Indestructible","Cannot be destroyed — except by Explosive"),
+            (AccentRed,                        "Hazard",        "Deadly on contact"),
+            (AccentOrange,                     "Jump Pad",      "Tap to launch Cubby"),
+            (new Color(0.50f, 0.10f, 0.10f),  "Falling Hazard","Falls when support removed"),
+            (new Color(0.55f, 0.10f, 0.80f),  "Explosive",     "Tap — explodes after 3s, destroys ALL nearby blocks"),
+            (new Color(0.10f, 0.80f, 0.90f),  "Portal",        "Walk in to teleport to twin"),
+            (AccentGreen,                      "Goal",          "Guide Cubby here to win"),
+        };
+
+        foreach (var (color, tileName, desc) in entries)
+            AddHintRow(contentGO.transform, color, tileName, desc);
+
+        // Close button
+        var closeBtn = Btn(card, "X  Close", new Vector2(0.5f, 0.065f),
+                           new Vector2(280, 64), AccentRed, White, 22, _sprBtnRed);
+        UnityEventTools.AddPersistentListener(closeBtn.onClick, ui.OnCloseClicked);
+
+        return root;
+    }
+
+    // One row: coloured square left, bold name + description stacked right.
+    static void AddHintRow(Transform parent, Color squareColor, string tileName, string desc)
+    {
+        var row   = new GameObject($"Row_{tileName.Replace(" ", "")}");
+        row.transform.SetParent(parent, false);
+        var rowRT = row.AddComponent<RectTransform>();
+        rowRT.sizeDelta = new Vector2(0, 72);
+        var rowImg = row.AddComponent<Image>();
+        rowImg.color = new Color(0f, 0f, 0f, 0.04f);
+
+        // Colour square — absolute left, vertically centred
+        var sqGO  = new GameObject("Square");
+        sqGO.transform.SetParent(row.transform, false);
+        var sqImg = sqGO.AddComponent<Image>();
+        sqImg.color = squareColor;
+        var sqRT  = sqGO.GetComponent<RectTransform>();
+        sqRT.anchorMin        = new Vector2(0f, 0.5f);
+        sqRT.anchorMax        = new Vector2(0f, 0.5f);
+        sqRT.pivot            = new Vector2(0f, 0.5f);
+        sqRT.sizeDelta        = new Vector2(48, 48);
+        sqRT.anchoredPosition = new Vector2(10f, 0f);
+
+        // Tile name — top half of right zone (offset 68px from left edge)
+        var nameGO  = new GameObject("TMP_Name");
+        nameGO.transform.SetParent(row.transform, false);
+        var nameTmp = nameGO.AddComponent<TextMeshProUGUI>();
+        nameTmp.text               = tileName;
+        nameTmp.fontSize           = 20f;
+        nameTmp.fontStyle          = FontStyles.Bold;
+        nameTmp.color              = CardText;
+        nameTmp.font               = _fontBold;
+        nameTmp.alignment          = TextAlignmentOptions.Left;
+        nameTmp.enableWordWrapping = false;
+        var nameRT = nameGO.GetComponent<RectTransform>();
+        nameRT.anchorMin = new Vector2(0f, 0.5f);
+        nameRT.anchorMax = new Vector2(1f, 1f);
+        nameRT.offsetMin = new Vector2(68f, 4f);
+        nameRT.offsetMax = new Vector2(-8f, -2f);
+
+        // Description — bottom half of right zone
+        var descGO  = new GameObject("TMP_Desc");
+        descGO.transform.SetParent(row.transform, false);
+        var descTmp = descGO.AddComponent<TextMeshProUGUI>();
+        descTmp.text               = desc;
+        descTmp.fontSize           = 15f;
+        descTmp.color              = new Color(0.35f, 0.37f, 0.45f);
+        descTmp.font               = _fontBold;
+        descTmp.alignment          = TextAlignmentOptions.Left;
+        descTmp.enableWordWrapping = true;
+        var descRT = descGO.GetComponent<RectTransform>();
+        descRT.anchorMin = new Vector2(0f, 0f);
+        descRT.anchorMax = new Vector2(1f, 0.5f);
+        descRT.offsetMin = new Vector2(68f, 2f);
+        descRT.offsetMax = new Vector2(-8f, -4f);
     }
 
     // ═════════════════════════════════════════════════════════════════════════

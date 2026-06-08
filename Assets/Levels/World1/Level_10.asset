@@ -18,124 +18,82 @@ MonoBehaviour:
   tiles:
   - type: 0
     gridPosition: {x: -7, y: 2}
+    extraData: 0
   - type: 0
     gridPosition: {x: -6, y: 2}
+    extraData: 0
   - type: 0
     gridPosition: {x: -5, y: 2}
+    extraData: 0
   - type: 0
     gridPosition: {x: -4, y: 2}
+    extraData: 0
   - type: 0
     gridPosition: {x: -3, y: 2}
+    extraData: 0
   - type: 0
     gridPosition: {x: -2, y: 2}
-  - type: 0
+    extraData: 0
+  - type: 1
     gridPosition: {x: -1, y: 2}
-  - type: 0
-    gridPosition: {x: 0, y: 2}
-  - type: 0
-    gridPosition: {x: 1, y: 2}
-  - type: 0
-    gridPosition: {x: 2, y: 2}
-  - type: 0
-    gridPosition: {x: 3, y: 2}
-  - type: 1
-    gridPosition: {x: 4, y: 2}
-  - type: 1
-    gridPosition: {x: 5, y: 2}
-  - type: 1
-    gridPosition: {x: 6, y: 2}
-  - type: 0
-    gridPosition: {x: 7, y: 2}
-  - type: 1
-    gridPosition: {x: -7, y: -1}
-  - type: 1
-    gridPosition: {x: -6, y: -1}
-  - type: 1
-    gridPosition: {x: -5, y: -1}
-  - type: 0
-    gridPosition: {x: -2, y: -1}
-  - type: 0
-    gridPosition: {x: -1, y: -1}
+    extraData: 0
+  - type: 5
+    gridPosition: {x: -1, y: 3}
+    extraData: 0
   - type: 0
     gridPosition: {x: 0, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 1, y: -1}
-  - type: 0
+    extraData: 0
+  - type: 4
     gridPosition: {x: 2, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 3, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 4, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 5, y: -1}
-  - type: 0
-    gridPosition: {x: 6, y: -1}
+    extraData: 0
   - type: 0
     gridPosition: {x: 7, y: -1}
-  - type: 0
-    gridPosition: {x: -7, y: -4}
-  - type: 0
-    gridPosition: {x: -6, y: -4}
-  - type: 0
-    gridPosition: {x: -5, y: -4}
-  - type: 0
-    gridPosition: {x: -4, y: -4}
-  - type: 0
-    gridPosition: {x: -3, y: -4}
-  - type: 0
-    gridPosition: {x: -2, y: -4}
-  - type: 0
-    gridPosition: {x: -1, y: -4}
-  - type: 0
-    gridPosition: {x: 0, y: -4}
-  - type: 0
-    gridPosition: {x: 1, y: -4}
-  - type: 0
-    gridPosition: {x: 2, y: -4}
-  - type: 0
-    gridPosition: {x: 3, y: -4}
-  - type: 0
-    gridPosition: {x: 4, y: -4}
-  - type: 0
-    gridPosition: {x: 5, y: -4}
-  - type: 0
-    gridPosition: {x: 6, y: -4}
-  - type: 0
-    gridPosition: {x: 7, y: -4}
+    extraData: 0
+  - type: 4
+    gridPosition: {x: 6, y: -1}
+    extraData: 0
   - type: 2
-    gridPosition: {x: -7, y: 3}
-  - type: 1
-    gridPosition: {x: -2, y: 3}
-  - type: 1
-    gridPosition: {x: 1, y: 3}
-  - type: 1
-    gridPosition: {x: 4, y: 3}
-  - type: 2
-    gridPosition: {x: 7, y: 3}
-  - type: 0
-    gridPosition: {x: 7, y: 1}
+    gridPosition: {x: 4, y: 0}
+    extraData: 0
   - type: 0
     gridPosition: {x: 7, y: 0}
+    extraData: 0
   - type: 1
-    gridPosition: {x: 2, y: 0}
-  - type: 2
-    gridPosition: {x: -7, y: 0}
-  - type: 1
-    gridPosition: {x: -5, y: 0}
-  - type: 3
-    gridPosition: {x: 7, y: -3}
+    gridPosition: {x: -1, y: -3}
+    extraData: 0
   - type: 0
-    gridPosition: {x: 7, y: -2}
-  - type: 1
-    gridPosition: {x: -4, y: -1}
-  - type: 1
-    gridPosition: {x: -3, y: -1}
-  - type: 2
-    gridPosition: {x: -7, y: -3}
-  - type: 1
+    gridPosition: {x: -2, y: -3}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -3, y: -3}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -4, y: -3}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -5, y: -3}
+    extraData: 0
+  - type: 0
     gridPosition: {x: -6, y: -3}
-  - type: 1
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -7, y: -3}
+    extraData: 0
+  - type: 3
     gridPosition: {x: -7, y: -2}
-  playerSpawnPosition: {x: -5, y: 3.5}
+    extraData: 0
+  playerSpawnPosition: {x: -7, y: 3.5}
   cameraCenter: {x: 0, y: 0}
   cameraOrthographicSize: 5

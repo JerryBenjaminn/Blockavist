@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Displays sequential tutorial pop-ups and invokes a callback when all are confirmed.
-/// Wire messageText, buttonLabel, and confirmButton in the Inspector.
+/// Displays a single tutorial pop-up and invokes a callback when confirmed.
+/// TutorialManager owns the queue and calls Show() once per step.
+/// Inspector refs (messageText, buttonLabel, confirmButton) are wired by UIBuilder.
 /// </summary>
 public class TutorialUI : MonoBehaviour
 {
@@ -13,48 +14,20 @@ public class TutorialUI : MonoBehaviour
     [SerializeField] private TMP_Text buttonLabel;
     [SerializeField] private Button   confirmButton;
 
-    private static readonly string[] Messages = {
-        "Tap yellow blocks to destroy them",
-        "Guide Cubby to the green goal!"
-    };
+    private Action _onDone;
 
-    private static readonly string[] ButtonLabels = {
-        "Got it!",
-        "Let's go!"
-    };
-
-    private int    _step;
-    private Action _onAllDone;
-
-    public void Show(Action onAllDone)
+    public void Show(string message, string btnLabel, Action onDone)
     {
-        Debug.Log($"[TutorialUI] Show() called — activating panel. messageText={(messageText != null ? "OK" : "NULL")}  buttonLabel={(buttonLabel != null ? "OK" : "NULL")}  confirmButton={(confirmButton != null ? "OK" : "NULL")}");
-        _onAllDone = onAllDone;
-        _step      = 0;
+        _onDone = onDone;
+        if (messageText != null) messageText.text = message;
+        if (buttonLabel  != null) buttonLabel.text  = btnLabel;
         gameObject.SetActive(true);
-        ApplyStep();
     }
 
-    // Wired to the confirm button's OnClick in the Inspector.
+    // Wired to the confirm button's OnClick in the Inspector (via UIBuilder).
     public void OnConfirmClicked()
     {
-        _step++;
-        bool done = _step >= Messages.Length;
-        Debug.Log($"[TutorialUI] OnConfirmClicked — step now={_step}  done={done}  onAllDone={((_onAllDone != null) ? "set" : "NULL")}");
-        if (!done)
-        {
-            ApplyStep();
-        }
-        else
-        {
-            gameObject.SetActive(false);
-            _onAllDone?.Invoke();
-        }
-    }
-
-    private void ApplyStep()
-    {
-        if (messageText != null) messageText.text = Messages[_step];
-        if (buttonLabel  != null) buttonLabel.text  = ButtonLabels[_step];
+        gameObject.SetActive(false);
+        _onDone?.Invoke();
     }
 }
