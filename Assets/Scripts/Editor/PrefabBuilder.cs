@@ -47,7 +47,8 @@ public static class PrefabBuilder
         CreateFacedTilePrefab<GoalTile>            ("GoalTile",    sprGoal,   sprGoalFace,   isTrigger: true,  scale: 1f);
         CreateSimpleTilePrefab<JumpPadTile>        ("JumpPadTile",        sprDestructible,   isTrigger: false, scale: 1f);
         CreatePhysicsTilePrefab<FallingHazardTile> ("FallingHazardTile",  sprHazard,         isTrigger: false, scale: 1f);
-        CreateSimpleTilePrefab<ExplosiveTile>      ("ExplosiveTile",      sprDestructible,   isTrigger: false, scale: 1f);
+        CreatePhysicsTilePrefab<TimedHazardTile>   ("TimedHazardTile",    sprHazard,         isTrigger: false, scale: 1f);
+        CreatePhysicsTilePrefab<ExplosiveTile>     ("ExplosiveTile",      sprDestructible,   isTrigger: false, scale: 1f);
         CreatePhysicsTilePrefab<PortalTile>        ("PortalTile",         sprGoal,           isTrigger: true,  scale: 1f);
         CreatePlayerPrefab(sprBody, sprFaceHappy, sprFaceShocked, sprFaceSmile, sprPeaceSign);
 
@@ -291,6 +292,7 @@ public static class PrefabBuilder
         AssignPrefab(so, "fallingHazardPrefab",  $"{PrefabDir}/FallingHazardTile.prefab");
         AssignPrefab(so, "explosivePrefab",      $"{PrefabDir}/ExplosiveTile.prefab");
         AssignPrefab(so, "portalPrefab",         $"{PrefabDir}/PortalTile.prefab");
+        AssignPrefab(so, "timedHazardPrefab",    $"{PrefabDir}/TimedHazardTile.prefab");
         AssignPrefab(so, "playerPrefab",         $"{PrefabDir}/Player.prefab");
 
         if (cam != null)

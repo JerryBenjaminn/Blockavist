@@ -17,17 +17,33 @@ public class FallingHazardTile : TileElement
 
     public override bool IsDestructible => false;
 
-    protected override void Start()
+    // Awake runs immediately at Instantiate time — before any physics step or Update.
+    // Resetting here guarantees kinematic state regardless of prefab body-type or restart order.
+    private void Awake()
     {
-        base.Start();
-        rb = GetComponent<Rigidbody2D>();
+        rb                = GetComponent<Rigidbody2D>();
         rb.bodyType       = RigidbodyType2D.Kinematic;
+        rb.linearVelocity = Vector2.zero;
         rb.freezeRotation = true;
+        falling           = false;
     }
+
+    protected override void Start() => base.Start();
 
     private void Update()
     {
         if (falling) return;
+
+        // Only monitor for missing support once gameplay is live.
+        var gm = GameManager.Instance;
+
+        // DEBUG — log state every frame until fall begins so we can see exactly when
+        // the guard passes on first load. Remove once root cause is confirmed.
+        Debug.Log($"[FallingHazard {name}] frame={Time.frameCount} " +
+                  $"State={gm?.CurrentState} IsCountingDown={gm?.IsCountingDown} " +
+                  $"pos={transform.position}");
+
+        if (gm == null || gm.CurrentState != GameManager.GameState.Playing || gm.IsCountingDown) return;
 
         // Check 0.6 units below center — safely outside the tile's own 1×1 collider.
         Vector2    checkPos = (Vector2)transform.position + Vector2.down * 0.6f;
@@ -35,6 +51,10 @@ public class FallingHazardTile : TileElement
 
         if (below == null || below.gameObject == gameObject)
         {
+            // DEBUG — capture the exact state values at the moment falling triggers.
+            Debug.Log($"[FallingHazard {name}] FALL TRIGGERED at frame={Time.frameCount} " +
+                      $"State={gm.CurrentState} IsCountingDown={gm.IsCountingDown} " +
+                      $"TimeSinceStartup={Time.realtimeSinceStartup:F3}");
             falling = true;
             StartCoroutine(FallAfterDelay());
         }

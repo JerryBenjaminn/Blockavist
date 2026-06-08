@@ -133,7 +133,11 @@ public class PlayerController : MonoBehaviour
     {
         if (!IsAlive) return;
 
+        // DEBUG — confirm trigger fires and what tile (if any) is on the collider
         TileElement tile = other.GetComponent<TileElement>();
+        Debug.Log($"[PlayerController] OnTriggerEnter2D: other={other.gameObject.name} " +
+                  $"tile={tile?.GetType().Name ?? "none"} isTrigger={other.isTrigger}");
+
         if (tile != null)
             tile.OnPlayerTrigger(this);
 

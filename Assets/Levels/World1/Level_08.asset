@@ -68,10 +68,10 @@ MonoBehaviour:
     gridPosition: {x: 6, y: -1}
     extraData: 0
   - type: 2
-    gridPosition: {x: -2, y: -1}
+    gridPosition: {x: -3, y: -1}
     extraData: 0
   - type: 2
-    gridPosition: {x: 3, y: -1}
+    gridPosition: {x: 2, y: -1}
     extraData: 0
   playerSpawnPosition: {x: -7, y: -0.5}
   cameraCenter: {x: 0, y: 0}

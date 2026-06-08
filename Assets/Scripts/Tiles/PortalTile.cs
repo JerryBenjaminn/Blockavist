@@ -39,11 +39,15 @@ public class PortalTile : TileElement
     {
         s_all.Add(this);
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        // DEBUG — confirm registration and portalId at enable time (id=0 here is expected;
+        // LevelManager assigns the real id after Instantiate returns)
+        Debug.Log($"[Portal] OnEnable: id={portalId} instanceID={GetInstanceID()} registry size={s_all.Count}");
     }
 
     private void OnDisable()
     {
         s_all.Remove(this);
+        Debug.Log($"[Portal] OnDisable: id={portalId} instanceID={GetInstanceID()} registry size after remove={s_all.Count}");
     }
 
     protected override void Start()
@@ -52,6 +56,11 @@ public class PortalTile : TileElement
         rb = GetComponent<Rigidbody2D>();
         rb.bodyType       = RigidbodyType2D.Kinematic;
         rb.freezeRotation = true;
+
+        // DEBUG — confirm trigger state and final portalId after LevelManager has set it
+        var col = GetComponent<Collider2D>();
+        Debug.Log($"[Portal] Start: id={portalId} instanceID={GetInstanceID()} " +
+                  $"isTrigger={col?.isTrigger} colliderType={col?.GetType().Name}");
     }
 
     private void Update()
@@ -70,9 +79,16 @@ public class PortalTile : TileElement
 
     public override void OnPlayerTrigger(PlayerController player)
     {
+        // DEBUG — confirm this method is reached and show cooldown + partner state
+        Debug.Log($"[Portal] OnPlayerTrigger called: id={portalId} onCooldown={onCooldown}");
+
         if (onCooldown) return;
 
         PortalTile partner = FindPartner();
+
+        // DEBUG — show partner lookup result
+        Debug.Log($"[Portal] FindPartner result: {(partner != null ? $"found id={partner.portalId} instanceID={partner.GetInstanceID()}" : "NULL — no matching partner in registry")}");
+
         if (partner == null) return;
 
         // Block the exit portal so the player doesn't immediately teleport back
@@ -80,6 +96,7 @@ public class PortalTile : TileElement
 
         // Teleport: place Cubby 0.5 units above the partner portal center
         player.transform.position = partner.transform.position + Vector3.up * 0.5f;
+        Debug.Log($"[Portal] Teleported player to {player.transform.position}");
     }
 
     public void ActivateCooldown()
@@ -96,6 +113,12 @@ public class PortalTile : TileElement
 
     private PortalTile FindPartner()
     {
+        // DEBUG — dump full registry so we can see all live portals and their ids
+        var reg = new System.Text.StringBuilder();
+        foreach (PortalTile p in s_all)
+            reg.Append($"[id={p.portalId} inst={p.GetInstanceID()} self={p == this}] ");
+        Debug.Log($"[Portal] FindPartner: looking for id={portalId}, registry ({s_all.Count}): {reg}");
+
         foreach (PortalTile p in s_all)
         {
             if (p != this && p.portalId == portalId)

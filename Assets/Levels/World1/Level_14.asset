@@ -34,7 +34,7 @@ MonoBehaviour:
   - type: 1
     gridPosition: {x: -1, y: -1}
     extraData: 0
-  - type: 5
+  - type: 8
     gridPosition: {x: -1, y: 4}
     extraData: 0
   - type: 4
@@ -52,9 +52,39 @@ MonoBehaviour:
   - type: 3
     gridPosition: {x: 7, y: 3}
     extraData: 0
-  - type: 5
+  - type: 8
     gridPosition: {x: -5, y: 4}
     extraData: 0
-  playerSpawnPosition: {x: -7, y: 0.5}
+  - type: 8
+    gridPosition: {x: -3, y: 4}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: -4, y: -1}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: -4, y: 0}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: -7, y: 0}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: -1, y: 0}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: -2, y: 0}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: -3, y: 0}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: 1, y: 0}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: 3, y: 1}
+    extraData: 0
+  - type: 1
+    gridPosition: {x: 5, y: 2}
+    extraData: 0
+  playerSpawnPosition: {x: -6, y: 0.5}
   cameraCenter: {x: 0, y: 0}
   cameraOrthographicSize: 5

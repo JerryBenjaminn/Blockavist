@@ -12,6 +12,7 @@ public enum TileType
     FallingHazard  = 5,
     Explosive      = 6,
     Portal         = 7,
+    TimedHazard    = 8,
 }
 
 [System.Serializable]

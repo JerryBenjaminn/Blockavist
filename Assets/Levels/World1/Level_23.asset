@@ -10,17 +10,35 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b6e14c7db6086c4b9af42bc5d672f37, type: 3}
-  m_Name: Level_16
+  m_Name: Level_23
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  levelNumber: 16
-  levelName: Level 16
-  worldNumber: 2
+  levelNumber: 23
+  levelName: Level 23
+  worldNumber: 3
   tiles:
   - type: 0
-    gridPosition: {x: -7, y: -4}
+    gridPosition: {x: -5, y: -1}
     extraData: 0
   - type: 0
-    gridPosition: {x: -6, y: -4}
+    gridPosition: {x: -5, y: -2}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -5, y: -3}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -4, y: -3}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -3, y: -3}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -3, y: -2}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -3, y: -1}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -4, y: -1}
     extraData: 0
   - type: 4
     gridPosition: {x: -5, y: -4}
@@ -37,7 +55,37 @@ MonoBehaviour:
   - type: 0
     gridPosition: {x: -1, y: -4}
     extraData: 0
-  - type: 0
+  - type: 2
+    gridPosition: {x: 0, y: -3}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 1, y: -3}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 2, y: -3}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 2, y: -2}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 2, y: -1}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 1, y: -1}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 0, y: -1}
+    extraData: 0
+  - type: 2
+    gridPosition: {x: 0, y: -2}
+    extraData: 0
+  - type: 6
+    gridPosition: {x: 1, y: -2}
+    extraData: 0
+  - type: 6
+    gridPosition: {x: -4, y: -2}
+    extraData: 0
+  - type: 4
     gridPosition: {x: 0, y: -4}
     extraData: 0
   - type: 0
@@ -49,11 +97,8 @@ MonoBehaviour:
   - type: 0
     gridPosition: {x: 3, y: -4}
     extraData: 0
-  - type: 0
+  - type: 4
     gridPosition: {x: 4, y: -4}
-    extraData: 0
-  - type: 0
-    gridPosition: {x: 5, y: -4}
     extraData: 0
   - type: 0
     gridPosition: {x: 6, y: -4}
@@ -61,32 +106,29 @@ MonoBehaviour:
   - type: 0
     gridPosition: {x: 7, y: -4}
     extraData: 0
-  - type: 0
-    gridPosition: {x: -3, y: -2}
+  - type: 3
+    gridPosition: {x: 7, y: -3}
     extraData: 0
-  - type: 7
-    gridPosition: {x: -3, y: -1}
-    extraData: 13
-  - type: 7
-    gridPosition: {x: -7, y: 3}
-    extraData: 13
+  - type: 0
+    gridPosition: {x: -6, y: -4}
+    extraData: 0
+  - type: 0
+    gridPosition: {x: -7, y: -4}
+    extraData: 0
   - type: 0
     gridPosition: {x: -7, y: 2}
     extraData: 0
   - type: 0
     gridPosition: {x: -6, y: 2}
     extraData: 0
-  - type: 0
+  - type: 4
     gridPosition: {x: -5, y: 2}
     extraData: 0
-  - type: 4
+  - type: 1
     gridPosition: {x: -4, y: 2}
     extraData: 0
-  - type: 1
+  - type: 0
     gridPosition: {x: -3, y: 2}
-    extraData: 0
-  - type: 1
-    gridPosition: {x: -3, y: 3}
     extraData: 0
   - type: 0
     gridPosition: {x: -2, y: 2}
@@ -99,9 +141,6 @@ MonoBehaviour:
     extraData: 0
   - type: 1
     gridPosition: {x: 1, y: 2}
-    extraData: 0
-  - type: 1
-    gridPosition: {x: 1, y: 3}
     extraData: 0
   - type: 0
     gridPosition: {x: 2, y: 2}
@@ -121,33 +160,18 @@ MonoBehaviour:
   - type: 0
     gridPosition: {x: 7, y: 2}
     extraData: 0
+  - type: 5
+    gridPosition: {x: 1, y: 3}
+    extraData: 0
+  - type: 5
+    gridPosition: {x: -4, y: 3}
+    extraData: 0
   - type: 7
     gridPosition: {x: 7, y: 3}
-    extraData: 14
+    extraData: 37
   - type: 7
-    gridPosition: {x: 3, y: 0}
-    extraData: 14
-  - type: 0
-    gridPosition: {x: 3, y: -1}
-    extraData: 0
-  - type: 0
-    gridPosition: {x: 4, y: -1}
-    extraData: 0
-  - type: 4
-    gridPosition: {x: 5, y: -1}
-    extraData: 0
-  - type: 3
-    gridPosition: {x: 7, y: 1}
-    extraData: 0
-  - type: 0
-    gridPosition: {x: 7, y: 0}
-    extraData: 0
-  - type: 5
-    gridPosition: {x: -3, y: 4}
-    extraData: 0
-  - type: 5
-    gridPosition: {x: 1, y: 4}
-    extraData: 0
-  playerSpawnPosition: {x: -7, y: -2.5}
+    gridPosition: {x: -7, y: -3}
+    extraData: 37
+  playerSpawnPosition: {x: -7, y: 3.5}
   cameraCenter: {x: 0, y: 0}
   cameraOrthographicSize: 5

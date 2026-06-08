@@ -155,9 +155,15 @@ public static class UIBuilder
         // so that text size, word-wrap, and outline fixes are applied to existing scenes.
         { var cd = rootT.Find("CountdownPanel"); if (cd != null) Object.DestroyImmediate(cd.gameObject); }
         var countdownGO   = BuildCountdownPanel(rootT);
-        var lvlCompleteGO = FindOrCreate(rootT, "LevelCompletePanel", () => BuildLevelCompletePanel(rootT));
-        var gameOverGO    = FindOrCreate(rootT, "GameOverPanel",      () => BuildGameOverPanel(rootT));
-        var tutorialGO    = FindOrCreate(rootT, "TutorialPanel",      () => BuildTutorialPanel(rootT));
+        // LevelCompletePanel — force-rebuild so button listeners are always correctly wired
+        { var lc = rootT.Find("LevelCompletePanel"); if (lc != null) Object.DestroyImmediate(lc.gameObject); }
+        var lvlCompleteGO = BuildLevelCompletePanel(rootT);
+        // GameOverPanel — force-rebuild so button listeners are always correctly wired
+        { var go = rootT.Find("GameOverPanel"); if (go != null) Object.DestroyImmediate(go.gameObject); }
+        var gameOverGO    = BuildGameOverPanel(rootT);
+        // TutorialPanel — force-rebuild so button listener is always correctly wired
+        { var t = rootT.Find("TutorialPanel"); if (t != null) Object.DestroyImmediate(t.gameObject); }
+        var tutorialGO    = BuildTutorialPanel(rootT);
         // HintPanel — force-rebuild so tile list changes take effect on re-run
         { var h = rootT.Find("HintPanel"); if (h != null) Object.DestroyImmediate(h.gameObject); }
         var hintGO        = BuildHintPanel(rootT, uiManagerComp);

@@ -28,7 +28,7 @@ public class LevelEditorWindow : EditorWindow
 
     // ── Paint tools ───────────────────────────────────────────────────────────
 
-    private enum Tool { Indestructible, Destructible, Spike, Goal, Spawn, Erase, JumpPad, FallingHazard, Explosive, Portal }
+    private enum Tool { Indestructible, Destructible, Spike, Goal, Spawn, Erase, JumpPad, FallingHazard, Explosive, Portal, TimedHazard }
 
     private static readonly Color[] ToolColor = {
         new Color(0.50f, 0.50f, 0.55f, 0.85f),  // Indestructible
@@ -41,22 +41,24 @@ public class LevelEditorWindow : EditorWindow
         new Color(0.50f, 0.05f, 0.05f, 0.85f),  // FallingHazard (dark red)
         new Color(0.55f, 0.10f, 0.80f, 0.85f),  // Explosive (purple)
         new Color(0.00f, 0.85f, 0.85f, 0.85f),  // Portal (cyan)
+        new Color(0.80f, 0.40f, 0.05f, 0.85f),  // TimedHazard (dark orange)
     };
 
     private static readonly string[] ToolLabel = {
         "Floor / Wall", "Destructible", "Spike", "Goal", "Spawn", "Erase",
-        "Jump Pad", "Fall Hazard", "Explosive", "Portal"
+        "Jump Pad", "Fall Hazard", "Explosive", "Portal", "Timed Hazard"
     };
 
-    // Display labels for hotkeys — indices 0-4 map to 1-5, index 5 = E, indices 6-9 map to 6-9
+    // Display labels for hotkeys — indices 0-4 map to 1-5, index 5 = E, indices 6-9 map to 6-9, index 10 = 0
     private static readonly string[] HotKeyLabel = {
-        "1", "2", "3", "4", "5", "E", "6", "7", "8", "9"
+        "1", "2", "3", "4", "5", "E", "6", "7", "8", "9", "0"
     };
 
     private static readonly KeyCode[] HotKey = {
         KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3,
         KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.E,
-        KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9
+        KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9,
+        KeyCode.Alpha0
     };
 
     // ── Window state ──────────────────────────────────────────────────────────
@@ -124,7 +126,7 @@ public class LevelEditorWindow : EditorWindow
         }
 
         // ── Palette ───────────────────────────────────────────────────────────
-        EditorGUILayout.LabelField("Tool  (keys: 1-9 / E)", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField("Tool  (keys: 0-9 / E)", EditorStyles.miniLabel);
         EditorGUILayout.Space(2);
 
         // Dynamic multi-row palette — 3 buttons per row
@@ -191,7 +193,14 @@ public class LevelEditorWindow : EditorWindow
         {
             EditorUtility.SetDirty(level);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[LevelEditor] Saved '{level.levelName}'");
+
+            // DEBUG — dump every tile type written so we can verify TimedHazard entries
+            // are present in the ScriptableObject after saving.
+            var sb = new System.Text.StringBuilder();
+            if (level.tiles != null)
+                foreach (var e in level.tiles)
+                    sb.Append($"{e.type}(int={( int)e.type})@{e.gridPosition} ");
+            Debug.Log($"[LevelEditor] Saved '{level.levelName}' — {level.tiles?.Length ?? 0} tiles: {sb}");
         }
 
         GUI.backgroundColor = new Color(1f, 0.45f, 0.45f);
@@ -400,6 +409,11 @@ public class LevelEditorWindow : EditorWindow
         TileType newType = erasing ? default : ToolToTileType(tool);
         if (!erasing && idx >= 0 && list[idx].type == newType) return;
 
+        // DEBUG — confirm the mapped TileType when a TimedHazard cell is placed.
+        if (!erasing && newType == TileType.TimedHazard)
+            Debug.Log($"[LevelEditor] Painting TimedHazard at {cell} — " +
+                      $"tool={tool} mapped to TileType.TimedHazard (int={( int)newType})");
+
         Undo.RecordObject(level, erasing ? "Erase Tile" : $"Place {tool}");
 
         if (erasing)
@@ -458,6 +472,7 @@ public class LevelEditorWindow : EditorWindow
         TileType.FallingHazard  => ToolColor[7],
         TileType.Explosive      => ToolColor[8],
         TileType.Portal         => ToolColor[9],
+        TileType.TimedHazard    => ToolColor[10],
         _                       => Color.magenta
     };
 
@@ -471,6 +486,7 @@ public class LevelEditorWindow : EditorWindow
         Tool.FallingHazard  => TileType.FallingHazard,
         Tool.Explosive      => TileType.Explosive,
         Tool.Portal         => TileType.Portal,
+        Tool.TimedHazard    => TileType.TimedHazard,
         _                   => TileType.Indestructible
     };
 
